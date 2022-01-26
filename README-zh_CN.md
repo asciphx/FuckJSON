@@ -22,7 +22,7 @@ struct Tab {
 	id(a), ok(b), name(c), date(d), types(e) {}
   const static char* $[];
 };//const static char* $[] -> 存储key的名字，对应顺序元组
-CONSTRUCT(Tab, id, ok, name, date, types)
+FUCKJSON(Tab, id, ok, name, date, types)
 struct Type {
   uint8_t id;
   text<10> language;
@@ -32,7 +32,7 @@ struct Type {
 	id(a), language(b), bigBlob(c), tabs(d) {}
   const static char* $[];
 };
-CONSTRUCT(Type, id, language, bigBlob, tabs)
+FUCKJSON(Type, id, language, bigBlob, tabs)
 ```
 
 ## 特征
