@@ -1,0 +1,7 @@
+*.ilk
+*.pdb
+*.obj
+#/out
+/.vs
+CppProperties.json
+tasks.vs.json
