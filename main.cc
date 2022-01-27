@@ -26,7 +26,7 @@ int main() {
     "language": "rust"
   }]
 }
-)").get<Tab>();//直接将json格式的字符串序列化成原对象
+)").get<Tab>();//直接将json格式的字符串反序列化成原对象
   t.types[1].language = "go programing";//text字段有最大长度限制，超出的部分将会丢弃
   t.types[1].tabs[0].name = "Megatron";//直接在结构体里面修改即可
   t.types[1].tabs[0].types = vector<Type>{ Type{ 1,"typescript" }, Type{ 2,"wtf!" } };//赋值
