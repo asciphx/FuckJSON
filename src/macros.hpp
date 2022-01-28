@@ -19,7 +19,7 @@
 #include "json.hpp"
 #include "Initalization.hpp"
 namespace orm {
-  using Expand = char[];
+  using Expand = int[];
 #define Exp (void)orm::Expand
   template <typename T, typename Fn, std::size_t... I>
   inline constexpr void ForEachTuple(T& tuple, Fn&& fn, std::index_sequence<I...>) {

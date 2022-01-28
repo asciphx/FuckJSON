@@ -1,6 +1,6 @@
 #include "src/macros.hpp"
 static int RES_INIT = orm::InitializationOrm();
-//模块化，以及循环依赖，是难点(Modularity and circular dependency are the difficulties)
+//妯″潡鍖栵紝浠ュ強寰幆渚濊禆锛屾槸闅剧偣(Modularity and circular dependency are the difficulties)
 using namespace std; using namespace orm;
 struct Type;
 struct Tab {
