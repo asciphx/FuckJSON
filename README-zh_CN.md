@@ -1,5 +1,5 @@
-﻿# FuckJSON
-> 一款c++的序列化与反序列化JSON工具
+﻿# FuckJSON[v1.1]
+> 元宇宙的c++的序列化与反序列化JSON工具，可以一对一，多对多，多对一或者一对多。
 
 ## 优势
 - [x] 基于最现代化的JSON库，nlohman JSON。
@@ -44,6 +44,7 @@ FUCKJSON(Type, id, language, bigBlob, tabs)
 ## 前提
 ```shell
 g++ -std=c++17 *.cc -o main -I./src
+g++ -std=c++17 *.cpp -o o2o -I./src
 ```
 # 支持的编译器（最低版本）:
     - Linux: G++ 9.2, Clang++ 9.0

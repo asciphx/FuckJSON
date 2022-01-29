@@ -1,5 +1,5 @@
-﻿# FuckJSON
-> A c++ serialization and deserialization JSON tool
+﻿# FuckJSON[v1.1]
+> Meta universe's C++ serialization and deserialization JSON tool can be one-to-one, many to many, many to one or one to many.
 
 ## Advantage
 - [x] Based on the most modern JSON library, nlohman JSON.
@@ -44,6 +44,7 @@ FUCKJSON(Type, id, language, bigBlob, tabs)
 ## Premise
 ```shell
 g++ -std=c++17 *.cc -o main -I./src
+g++ -std=c++17 *.cpp -o o2o -I./src
 ```
 # Supported compilers(minimum version):
     - Linux: G++ 9.2, Clang++ 9.0

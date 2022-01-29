@@ -1,12 +1,13 @@
 #include "module.hpp"
 /* FuckJSON https://github.com/asciphx/FuckJSON Copyright (c) 2021-2022 Asciphx */
+//Many to many
 int main() {
-  Tab t{ 1, true, "静态反射", now(), vector<Type>{ Type{ 1,"模块化" } } };//初始化结构体
+  Tab t{ 1, true, "reflect", now(), vector<Type>{ Type{ 1,"model" } } };
   t = json::parse(R"(
 {
   "id": 3,
   "ok": false,
-  "name": "序列化与反序列化",
+  "name": "FuckJSON",
   "date": "2021-09-08 01:04:30",
   "types": [{
     "id": 1,
@@ -26,11 +27,10 @@ int main() {
     "language": "rust"
   }]
 }
-)").get<Tab>();//直接将json格式的字符串反序列化成原对象
-  t.types[1].language = "go programing";//text字段有最大长度限制，超出的部分将会丢弃
-  t.types[1].tabs[0].name = "Megatron";//直接在结构体里面修改即可
-  t.types[1].tabs[0].types = vector<Type>{ Type{ 1,"typescript" }, Type{ 2,"wtf!" } };//赋值
-  //打印json反序列化结构体，后面结构体序列化成json，再以dump(2)格式化输出打印
+)").get<Tab>();
+  t.types[1].language = "go programing";
+  t.types[1].tabs[0].name = "Megatron";
+  t.types[1].tabs[0].types = vector<Type>{ Type{ 1,"typescript" }, Type{ 2,"best in the universe" } };
   cout << &t << '\n' << json(t).dump(2) << '\n';
   return 0;
 }

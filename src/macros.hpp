@@ -36,10 +36,16 @@ namespace orm {
   template <class T> struct is_vector : std::false_type {};
   template <class T> struct is_vector<T[]> : std::false_type {};
   template <class T> struct is_vector<std::vector<T>> : std::true_type {};
+  template <class T> struct is_ptr : std::false_type {};
+  template <class T> struct is_ptr<T*> : std::true_type {};
+  template <class T> struct is_ptr<const T*> : std::true_type {};
   template<typename C> struct vector_pack {};
   template<template<typename, typename> class C, typename A, typename B> struct vector_pack<C<A, B>> { using type = A; };
   template<typename T> using vector_pack_t = typename vector_pack<T>::type;
-  //Serialization
+  template<typename T> struct ptr_pack {};
+  template<typename T> struct ptr_pack<T*> { using type = T; };
+  template<typename T> using ptr_pack_t = typename ptr_pack<T>::type;
+  //Serialization into JSON
   inline void FuckJSON(const tm& _v, const char* s, json& j) {
 	std::ostringstream os; os << std::setfill('0');
 #ifdef _WIN32
@@ -60,8 +66,46 @@ namespace orm {
 	  constexpr auto $ = Tuple<vector_pack_t<T>>(); std::string s; s.reserve(0x3f); s.push_back('[');
 	  for (size_t i = 0; i < l; ++i) {
 		auto* t = &_v[i]; s.push_back('{'); int8_t k = -1;
-		ForEachTuple($, [t, &k, &s](auto& _) { s.push_back('"'); s += t->$[++k];
-		if constexpr (std::is_same<const tm, std::remove_reference_t<decltype(t->*_)>>::value) {
+		ForEachTuple($, [t, &k, &s](auto& _) {
+		  if constexpr (std::is_same<const tm, std::remove_reference_t<decltype(t->*_)>>::value) {
+			s.push_back('"'); s += t->$[++k]; s += "\":\""; std::ostringstream os; const tm* time = &(t->*_); os << std::setfill('0');
+#ifdef _WIN32
+			os << std::setw(4) << time->tm_year + 1900;
+#else
+			int y = time->tm_year / 100; os << std::setw(2) << 19 + y << std::setw(2) << time->tm_year - y * 100;
+#endif
+			os << '-' << std::setw(2) << (time->tm_mon + 1) << '-' << std::setw(2) << time->tm_mday << ' ' << std::setw(2)
+			  << time->tm_hour << ':' << std::setw(2) << time->tm_min << ':' << std::setw(2) << time->tm_sec << '"'; s += os.str();
+		  } else if constexpr (std::is_same<bool, decltype(t->*_)>::value) {
+			s.push_back('"'); s += t->$[++k]; s += "\":", s += t->*_ == true ? "true" : "false";
+		  } else if constexpr (std::is_fundamental<std::remove_reference_t<decltype(t->*_)>>::value) {
+			s.push_back('"'); s += t->$[++k]; s += "\":" + std::to_string(t->*_);
+		  } else if constexpr (std::is_same<const std::string, std::remove_reference_t<decltype(t->*_)>>::value) {
+			s.push_back('"'); s += t->$[++k]; s += "\":\"" + t->*_ + "\"";
+		  } else if constexpr (is_vector<std::remove_reference_t<decltype(t->*_)>>::value) {
+			s.push_back('"'); s += t->$[++k]; s += "\":"; s << &(t->*_);
+		  } else if constexpr (is_ptr<std::remove_reference_t<decltype(t->*_)>>::value) {
+			s.push_back('"'); s += t->$[++k]; s += "\":"; s << *t->*_;
+		  } else {
+			s.push_back('"'); s += t->$[++k]; s += "\":"; s << t->*_;
+		  } s.push_back(',');
+		  }, std::make_index_sequence<std::tuple_size<decltype($)>::value>{}); s[s.size() - 1] = '}'; s.push_back(',');
+	  } s[s.size() - 1] = ']'; j[c] = json::parse(s);
+	}
+  }
+  template<typename T>
+  inline typename std::enable_if<!is_ptr<T>::value && std::is_fundamental<T>::value, void>::type FuckJSON(const T& _v, const char* s, json& j) {
+	j[s] = _v;
+  }
+  template <class T>
+  static typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckJSON(const T& _v, const char* c, json& j) {
+	if (_v == nullptr) {
+	  j[c] = nullptr;
+	} else {
+	  constexpr auto $ = Tuple<ptr_pack_t<T>>(); auto* t = _v; std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
+	  ForEachTuple($, [t, &k, &s](auto& _) {
+		if constexpr (std::is_same<tm, std::remove_reference_t<decltype(t->*_)>>::value) {
+		  s.push_back('"'); s += t->$[++k];
 		  s += "\":\""; std::ostringstream os; const tm* time = &(t->*_); os << std::setfill('0');
 #ifdef _WIN32
 		  os << std::setw(4) << time->tm_year + 1900;
@@ -69,28 +113,28 @@ namespace orm {
 		  int y = time->tm_year / 100; os << std::setw(2) << 19 + y << std::setw(2) << time->tm_year - y * 100;
 #endif
 		  os << '-' << std::setw(2) << (time->tm_mon + 1) << '-' << std::setw(2) << time->tm_mday << ' ' << std::setw(2)
-			<< time->tm_hour << ':' << std::setw(2) << time->tm_min << ':' << std::setw(2) << time->tm_sec << '"'; s += os.str();
+			<< time->tm_hour << ':' << std::setw(2) << time->tm_min << ':' << std::setw(2) << time->tm_sec << '"'; s += os.str(); s.push_back(',');
 		} else if constexpr (std::is_same<bool, decltype(t->*_)>::value) {
-		  s += "\":", s += t->*_ == true ? "true" : "false";
+		  s.push_back('"'); s += t->$[++k]; s += "\":", s += t->*_ == true ? "true" : "false"; s.push_back(',');
 		} else if constexpr (std::is_fundamental<std::remove_reference_t<decltype(t->*_)>>::value) {
-		  s += "\":" + std::to_string(t->*_);
-		} else if constexpr (std::is_same<const std::string, std::remove_reference_t<decltype(t->*_)>>::value) {
-		  s += "\":\"" + t->*_ + "\"";
+		  s.push_back('"'); s += t->$[++k]; s += "\":" + std::to_string(t->*_); s.push_back(',');
+		} else if constexpr (std::is_same<std::string, std::remove_reference_t<decltype(t->*_)>>::value) {
+		  s.push_back('"'); s += t->$[++k]; s += "\":\"" + t->*_ + "\""; s.push_back(',');
 		} else if constexpr (is_vector<std::remove_reference_t<decltype(t->*_)>>::value) {
-		  s += "\":"; s << &(t->*_);
+		  s.push_back('"'); s += t->$[++k]; s += "\":"; s << &(t->*_); s.push_back(',');
+		} else if constexpr (is_text<std::remove_reference_t<decltype(t->*_)>>::value) {
+		  s.push_back('"'); s += t->$[++k]; s += "\":"; s << t->*_; s.push_back(',');
+		} else if constexpr (is_ptr<std::remove_reference_t<decltype(t->*_)>>::value) {
+		  s.push_back('"'); s += t->$[++k]; s += "\":"; t->*_ == nullptr ? s += "null" : s << t->*_; s.push_back(',');
 		} else {
-		  s += "\":"; s << t->*_;
-		} s.push_back(',');
-		  }, std::make_index_sequence<std::tuple_size<decltype($)>::value>{}); s[s.size() - 1] = '}'; s.push_back(',');
-	  } s[s.size() - 1] = ']'; j[c] = json::parse(s);
+		  s.push_back('"'); s += t->$[++k]; s += "\":"; s << &(t->*_); s.push_back(',');
+		}
+		}, std::make_index_sequence<std::tuple_size<decltype($)>::value>{}); s[s.size() - 1] = '}';
+		j[c] = json::parse(s);
 	}
   }
-  template <class T>
-  inline typename std::enable_if<!is_text<T>::value && !is_vector<T>::value, void>::type FuckJSON(const T& _v, const char* s, json& j) {
-	j[s] = _v;
-  }
-  //Deserialization
-  inline void FastestJS(tm& _v, const char* s, const json& j) {
+  //Deserialization into Object
+  inline void FuckOop(tm& _v, const char* s, const json& j) {
 	std::string d_; try { if (j.contains(s))j.at(s).get_to(d_); } catch (const std::exception&) {
 	  _v.tm_year = -1900; _v.tm_mon = -1; _v.tm_mday = 0; _v.tm_hour = 0; _v.tm_min = 0; _v.tm_sec = 0;
 	} int year = 0, month = 0, day = 0, hour = 0, min = 0, sec = 0;
@@ -99,16 +143,20 @@ namespace orm {
 	}
   }
   template <class T>
-  static inline typename std::enable_if<is_text<T>::value, void>::type FastestJS(T& _v, const char* s, const json& j) {
+  static inline typename std::enable_if<is_text<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
 	try { _v = j.at(s).get<std::string>(); } catch (const std::exception&) {}
   }
   template <class T>
-  static inline typename std::enable_if<is_vector<T>::value, void>::type FastestJS(T& _v, const char* s, const json& j) {
+  static inline typename std::enable_if<is_vector<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
 	try { for (auto& t : j.at(s))_v.push_back(t.get<vector_pack_t<T>>()); } catch (const std::exception&) {}
   }
-  template <class T>
-  static inline typename std::enable_if<!is_text<T>::value && !is_vector<T>::value, void>::type FastestJS(T& _v, const char* s, const json& j) {
+  template<typename T>
+  inline typename std::enable_if<!is_ptr<T>::value && std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
 	try { j.at(s).get_to(_v); } catch (const std::exception&) {}
+  }
+  template <class T>
+  inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T _v, const char* s, const json& j) {
+	try { _v = &j.at(s).get<ptr_pack_t<T>>(); } catch (const std::exception&) {}
   }
 }
 #define EXP(O) O
@@ -194,38 +242,38 @@ namespace orm {
 #define COL_N1(o,N,...) EXP(COL_##N(o,__VA_ARGS__))
 #define COL_N(o,N,...) COL_N1(o,N,__VA_ARGS__)
 
-#define ATTR_1(o,k)      orm::FastestJS(o.k,#k,j);
-#define ATTR_2(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_1(o,__VA_ARGS__))
-#define ATTR_3(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_2(o,__VA_ARGS__))
-#define ATTR_4(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_3(o,__VA_ARGS__))
-#define ATTR_5(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_4(o,__VA_ARGS__))
-#define ATTR_6(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_5(o,__VA_ARGS__))
-#define ATTR_7(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_6(o,__VA_ARGS__))
-#define ATTR_8(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_7(o,__VA_ARGS__))
-#define ATTR_9(o,k,...)  orm::FastestJS(o.k,#k,j), EXP(ATTR_8(o,__VA_ARGS__))
-#define ATTR_10(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_9(o,__VA_ARGS__))
-#define ATTR_11(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_10(o,__VA_ARGS__))
-#define ATTR_12(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_11(o,__VA_ARGS__))
-#define ATTR_13(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_12(o,__VA_ARGS__))
-#define ATTR_14(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_13(o,__VA_ARGS__))
-#define ATTR_15(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_14(o,__VA_ARGS__))
-#define ATTR_16(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_15(o,__VA_ARGS__))
-#define ATTR_17(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_16(o,__VA_ARGS__))
-#define ATTR_18(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_17(o,__VA_ARGS__))
-#define ATTR_19(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_18(o,__VA_ARGS__))
-#define ATTR_20(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_19(o,__VA_ARGS__))
-#define ATTR_21(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_20(o,__VA_ARGS__))
-#define ATTR_22(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_21(o,__VA_ARGS__))
-#define ATTR_23(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_22(o,__VA_ARGS__))
-#define ATTR_24(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_23(o,__VA_ARGS__))
-#define ATTR_25(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_24(o,__VA_ARGS__))
-#define ATTR_26(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_25(o,__VA_ARGS__))
-#define ATTR_27(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_26(o,__VA_ARGS__))
-#define ATTR_28(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_27(o,__VA_ARGS__))
-#define ATTR_29(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_28(o,__VA_ARGS__))
-#define ATTR_30(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_29(o,__VA_ARGS__))
-#define ATTR_31(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_30(o,__VA_ARGS__))
-#define ATTR_32(o,k,...) orm::FastestJS(o.k,#k,j), EXP(ATTR_31(o,__VA_ARGS__))
+#define ATTR_1(o,k)      orm::FuckOop(o.k,#k,j);
+#define ATTR_2(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_1(o,__VA_ARGS__))
+#define ATTR_3(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_2(o,__VA_ARGS__))
+#define ATTR_4(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_3(o,__VA_ARGS__))
+#define ATTR_5(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_4(o,__VA_ARGS__))
+#define ATTR_6(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_5(o,__VA_ARGS__))
+#define ATTR_7(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_6(o,__VA_ARGS__))
+#define ATTR_8(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_7(o,__VA_ARGS__))
+#define ATTR_9(o,k,...)  orm::FuckOop(o.k,#k,j), EXP(ATTR_8(o,__VA_ARGS__))
+#define ATTR_10(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_9(o,__VA_ARGS__))
+#define ATTR_11(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_10(o,__VA_ARGS__))
+#define ATTR_12(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_11(o,__VA_ARGS__))
+#define ATTR_13(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_12(o,__VA_ARGS__))
+#define ATTR_14(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_13(o,__VA_ARGS__))
+#define ATTR_15(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_14(o,__VA_ARGS__))
+#define ATTR_16(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_15(o,__VA_ARGS__))
+#define ATTR_17(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_16(o,__VA_ARGS__))
+#define ATTR_18(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_17(o,__VA_ARGS__))
+#define ATTR_19(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_18(o,__VA_ARGS__))
+#define ATTR_20(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_19(o,__VA_ARGS__))
+#define ATTR_21(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_20(o,__VA_ARGS__))
+#define ATTR_22(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_21(o,__VA_ARGS__))
+#define ATTR_23(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_22(o,__VA_ARGS__))
+#define ATTR_24(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_23(o,__VA_ARGS__))
+#define ATTR_25(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_24(o,__VA_ARGS__))
+#define ATTR_26(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_25(o,__VA_ARGS__))
+#define ATTR_27(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_26(o,__VA_ARGS__))
+#define ATTR_28(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_27(o,__VA_ARGS__))
+#define ATTR_29(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_28(o,__VA_ARGS__))
+#define ATTR_30(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_29(o,__VA_ARGS__))
+#define ATTR_31(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_30(o,__VA_ARGS__))
+#define ATTR_32(o,k,...) orm::FuckOop(o.k,#k,j), EXP(ATTR_31(o,__VA_ARGS__))
 #define ATTR_N1(o,N,...) EXP(ATTR_##N(o,__VA_ARGS__))
 #define ATTR_N(o,N,...) ATTR_N1(o,N,__VA_ARGS__)
 #define ATTRS(o,...)\
@@ -287,8 +335,12 @@ int y = time->tm_year / 100; os << std::setw(2) << 19 + y << std::setw(2) << tim
 	s += "\":\"" + t + "\"";\
   } else if constexpr (is_vector<std::remove_reference_t<decltype(t)>>::value) {\
 	size_t l = t.size(); if (l) { s.push_back('"'); s += c->$[++i]; s += "\":"; s << &t; } else { s.pop_back(); }\
-  } else {\
+  } else if constexpr (is_ptr<std::remove_reference_t<decltype(t)>>::value) {\
+    s += "\":";t==nullptr?s+="null":s << t;\
+  } else if constexpr (is_text<std::remove_reference_t<decltype(t)>>::value) {\
 	s += "\":"; s << t;\
+  } else {\
+	s += "\":"; s << &t;\
   } s.push_back(',');\
   }); s[s.size() - 1] = '}'; return s;\
   }\
@@ -310,7 +362,6 @@ std::ostream& operator<<(std::ostream& s, std::vector<o>* c) {\
   for (size_t i = 1; i < l; ++i) { s << ',' << &c->at(i); }\
   } s << ']'; return s;\
 }\
-std::ostream& operator<<(std::ostream& m, o* c) {\
-  std::string s; s << c; return m << s;\
-}
+std::ostream& operator<<(std::ostream& m, o* c) { std::string s; s << c; return m << s; }\
+std::ostream& operator<<(std::ostream& m, o& c) { std::string s; s << &c; return m << s; }
 #endif
