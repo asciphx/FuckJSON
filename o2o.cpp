@@ -38,7 +38,11 @@ int main() {
   "ok": false,
   "name": "FuckJSON",
   "date": "2021-09-08 01:04:30",
-  "type": null
+  "type":  {
+    "bigBlob": 0.0,
+    "id": 1,
+    "language": "Meta unive"
+  }
 }
 )").get<Tab>(); cout << t << '\n';
   t.name = "Megatron";

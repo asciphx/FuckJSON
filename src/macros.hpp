@@ -94,7 +94,7 @@ namespace orm {
 	}
   }
   template<typename T>
-  inline typename std::enable_if<!is_ptr<T>::value && std::is_fundamental<T>::value, void>::type FuckJSON(const T& _v, const char* s, json& j) {
+  inline typename std::enable_if<!is_ptr<T>::value&& std::is_fundamental<T>::value, void>::type FuckJSON(const T& _v, const char* s, json& j) {
 	j[s] = _v;
   }
   template <class T>
@@ -151,12 +151,12 @@ namespace orm {
 	try { for (auto& t : j.at(s))_v.push_back(t.get<vector_pack_t<T>>()); } catch (const std::exception&) {}
   }
   template<typename T>
-  inline typename std::enable_if<!is_ptr<T>::value && std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
+  inline typename std::enable_if<!is_ptr<T>::value&& std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
 	try { j.at(s).get_to(_v); } catch (const std::exception&) {}
   }
   template <class T>
-  inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T _v, const char* s, const json& j) {
-	try { _v = &j.at(s).get<ptr_pack_t<T>>(); } catch (const std::exception&) {}
+  inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
+	//Pointer cannot be deserialized
   }
 }
 #define EXP(O) O
