@@ -13,7 +13,7 @@ namespace orm {
 	RES_last = std::chrono::steady_clock::now();
 	return RES_NOW;
   }
-  //准备全局时间变量，以及pgsql的类型系统(Prepare the global time variable and the type system of PgSQL)
+  //准备全局时间变量
   static int InitializationOrm() {
 	time_t RES_ti; std::time(&RES_ti);
 #if defined(_MSC_VER) || defined(__MINGW32__)
