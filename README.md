@@ -1,4 +1,4 @@
-﻿# FuckJSON[v1.1]
+﻿# FuckJSON[v1.2]
 > Meta universe's C++ serialization and deserialization JSON tool can be one-to-one, many to many, many to one or one to many.
 
 ## Advantage
@@ -8,6 +8,7 @@
 - [x] Now, the problems of modularity, interdependence and circular dependency have been solved.
 - [x] Pure header files can be compiled directly without cmake
 - [x] Supports serializing objects or vector objects to strings, serializing objects to get JSON, and deserializing JSON format strings to objects.
+- [x] Loose boolean type deserialization, including but not limited to true, false, and 0, 1
 
 ## Model layer
 ```c++
@@ -43,8 +44,8 @@ FUCKJSON(Type, id, language, bigBlob, tabs)
 
 ## Premise
 ```shell
-g++ -std=c++17 *.cc -o main -I./src
-g++ -std=c++17 *.cpp -o o2o -I./src
+g++ -std=c++17 *.cc -o main -I./src -O3
+g++ -std=c++17 *.cpp -o o2o -I./src -O3
 ```
 # Supported compilers(minimum version):
     - Linux: G++ 9.2, Clang++ 9.0

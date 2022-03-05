@@ -8,9 +8,7 @@ struct Type {
   uint8_t id;
   text<10> language;
   double bigBlob;
-  Tab* tab;
-  Type(uint8_t a = 0, const char* b = "", double c = 0, Tab* d = {}) :
-	id(a), language(b), bigBlob(c), tab(d) {}
+  Tab* tab = nullptr;
   const static char* $[];
 };
 FUCKJSON(Type, id, language, bigBlob, tab)
@@ -18,10 +16,8 @@ struct Tab {
   uint32_t id;
   bool ok;
   text<15> name;
-  tm date;
-  Type* type;
-  Tab(uint32_t a = 0, bool b = false, const char* c = "", tm d = now(), Type* e = {}) :
-	id(a), ok(b), name(c), date(d), type(e) {}
+  tm date = now();
+  Type* type = nullptr;
   const static char* $[];
 };
 FUCKJSON(Tab, id, ok, name, date, type)
@@ -44,9 +40,8 @@ int main() {
     "language": "Meta unive"
   }
 }
-)").get<Tab>(); cout << t << '\n';
+)").get<Tab>();// cout << t << '\n';
   t.name = "Megatron";
-  t.type = &ty;
   cout << json(t).dump(2) << '\n';
   return 0;
 }

@@ -31,6 +31,6 @@ int main() {
   t.types[1].language = "go programing";
   t.types[1].tabs[0].name = "Megatron";
   t.types[1].tabs[0].types = vector<Type>{ Type{ 1,"typescript" }, Type{ 2,"best in the universe" } };
-  cout << &t << '\n' << json(t).dump(2) << '\n';
+  cout << t << '\n' << json(t).dump(2) << '\n';
   return 0;
 }

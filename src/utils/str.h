@@ -3,6 +3,23 @@
 #include <string>
 #include <iomanip>
 #include <cstdlib>
+tm operator+(tm& t, tm& m);
+tm operator-(tm& t, tm& m);
+bool operator==(tm& t, tm& m);
+bool operator!=(tm& t, tm& m);
+bool operator<(tm& t, tm& m);
+bool operator>(tm& t, tm& m);
+bool operator<=(tm& t, tm& m);
+bool operator>=(tm& t, tm& m);
+static std::string& toUpperCase(std::string& s);
+static std::string toUpperCase(const char* s);
+static std::string& toLowerCase(std::string& s);
+static std::string toLowerCase(const char* s);
+static std::string toSqlCase(const char* s);
+template<typename T> const char* getObjectName();
+static std::string toQuotes(const char* s);
+std::ostream& operator<<(std::ostream& os, const tm& _v);
+std::string& operator<<(std::string& s, const tm& _v);
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,32 +41,27 @@ extern "C" {
   static int find1CharPosASC(const char* c, const char d) {
 	for (int l = strLen(c), i = 0; i < l; ++i) { if (c[i] == d)return i; }return -1;
   }
-  //other not safe
-  static char* subStr(const char* c, int i, int e) {
+  static char* to8Str(unsigned long long i) {
+	int z = 2; for (unsigned long long a = i; a > 0x7f; a -= 0x7f, a /= 0x100, ++z);
+	unsigned long long b, t = i / 0x100; b = i - t * 0x100 - 32; char w[9]; w[--z] = '\0';
+	while (t > 0x7f) { w[--z] = RES_ASCII[b]; i = t; t = i / 0x100; b = i - t * 0x100 - 32; }
+	w[--z] = RES_ASCII[b]; if (z > 0) { t -= 32; w[0] = RES_ASCII[t]; } return w;
+  }
+  static char* to4Str(int i) {
+	int t = i / 0x100, b = i - t * 0x100 - 32, z = i > 0x7f7f7f ? 5 : i > 0x7f7f ? 4 : i > 0x7f ? 3 : 2;
+	char w[5]; w[--z] = '\0'; while (t > 0x7f) { w[--z] = RES_ASCII[b]; i = t; t = i / 0x100; b = i - t * 0x100 - 32; }
+	w[--z] = RES_ASCII[b]; if (z > 0) { t -= 32; w[0] = RES_ASCII[t]; } return w;
+  }
+  //If not safe, it is agreed not to use static. Also means that delete or free is required
+  char* subStr(const char* c, int i, int e) {
 	if (e < i || i < 0)return (char*)0;
 	char* w = (char*)malloc(sizeof(char) * (e - i + 1)); int p = 0; while (i < e)w[p++] = c[i++]; w[p] = 0; return w;
   }
-  static char* joinS2CInInt(const char* c, int i, const char* s) {
+  char* joinS2CInInt(const char* c, int i, const char* s) {
 	int j = strLen(s), l = strLen(c), p = 0, n = 0, m = 0;
 	char* w = (char*)malloc(sizeof(char) * (l + j));
 	--i; while (p < i)w[p++] = c[n++]; while (m < j)w[p++] = s[m++];
 	while (n < l) { w[p++] = c[n++]; } w[p] = '\0'; return w;
-  }
-  static char* to8Str(unsigned long long i) {
-	int z = 2; for (unsigned long long a = i; a > 0x7f; a -= 0x7f, a /= 0x100, ++z);
-	unsigned long long b, t = i / 0x100; b = i - t * 0x100 - 32;
-	char* w = (char*)malloc(sizeof(char) * z); w[--z] = '\0';
-	while (t > 0x7f) {
-	  w[--z] = RES_ASCII[b]; i = t; t = i / 0x100; b = i - t * 0x100 - 32;
-	}
-	w[--z] = RES_ASCII[b]; if (z > 0) { t -= 32; w[0] = RES_ASCII[t]; }
-	return w;
-  }
-  static char* to4Str(int i) {
-	int t = i / 0x100, b = i - t * 0x100 - 32, z = i > 0x7f7f7f ? 5 : i > 0x7f7f ? 4 : i > 0x7f ? 3 : 2;
-	char* w = (char*)malloc(sizeof(char) * (z)); w[--z] = '\0';
-	while (t > 0x7f) { w[--z] = RES_ASCII[b]; i = t; t = i / 0x100; b = i - t * 0x100 - 32; }
-	w[--z] = RES_ASCII[b]; if (z > 0) { t -= 32; w[0] = RES_ASCII[t]; } return w;
   }
   static int hack_4str(const char* oid) {
 	int t = 0, i = strLen(oid), j, pow = 1;
@@ -71,6 +83,18 @@ extern "C" {
   static inline constexpr unsigned long long hackAllStr(const char* s) {
 	unsigned long long r = 0; for (unsigned short i = 0xffff; s[++i]; r *= 0x1f, r += s[i]); return r;
   }
+  //The following void can only be used for MySQL or certain types(in the "ccORM.hh" file)
+  static inline short atos_(char* c) {
+	short r = 0; if (*c == '-') { while (*++c) r = r * 10 - *c + 0x30; } else { while (*c) r = r * 10 + *c++ - 0x30; } return r;
+  }
+  static inline int atoi_(char* c) {
+	int r = 0; if (*c == '-') { while (*++c) r = r * 10 - *c + 0x30; } else { while (*c) r = r * 10 + *c++ - 0x30; } return r;
+  }
+  static inline long long atol_(char* c) {
+	long long r = 0; if (*c == '-') { while (*++c) r = r * 10 - *c + 0x30; } else { while (*c) r = r * 10 + *c++ - 0x30; } return r;
+  }
+  static inline long long aton_(char* c) { long long r = 0; while (*++c) r = r * 10 - *c + 0x30; return r; }//negative
+  static inline unsigned long long atou_(char* c) { unsigned long long r = 0; while (*c) r = r * 10 + *c++ - 0x30; return r; }
 #ifdef __cplusplus
 }  /* extern "C" */
 constexpr unsigned long long operator""_l(const char* s, size_t /*len*/) {
@@ -83,7 +107,6 @@ constexpr int operator""_i(const char* s, size_t /*len*/) {
 constexpr unsigned long long operator""_a(const char* s, size_t /*len*/) {
   unsigned long long r = 0; for (unsigned long long i = 0; s[i]; r *= 0x1f, r += s[i++]); return r;
 }
-
 static std::string& toUpperCase(std::string& s) {
   char* c = (char*)s.c_str();
   if (*c > 0x60 && *c < 0x7b) { *c &= ~0x20; }
@@ -162,4 +185,18 @@ std::string& operator<<(std::string& s, const tm& _v) {
   os << '-' << std::setw(2) << (_v.tm_mon + 1) << '-' << std::setw(2) << _v.tm_mday << ' ' << std::setw(2)
 	<< _v.tm_hour << ':' << std::setw(2) << _v.tm_min << ':' << std::setw(2) << _v.tm_sec; s = os.str(); return s;
 }
+tm operator+(tm& t, tm& m) {
+  tm time; memcpy(&time, &t, sizeof(tm)); time.tm_sec += m.tm_sec; time.tm_min += m.tm_min; time.tm_hour += m.tm_hour;
+  time.tm_mday += m.tm_mday; time.tm_mon += m.tm_mon; time.tm_year += m.tm_year; time.tm_isdst = 0; return time;
+}
+tm operator-(tm& t, tm& m) {
+  tm time; memcpy(&time, &t, sizeof(tm)); time.tm_sec -= m.tm_sec; time.tm_min -= m.tm_min; time.tm_hour -= m.tm_hour;
+  time.tm_mday -= m.tm_mday; time.tm_mon -= m.tm_mon; time.tm_year -= m.tm_year; time.tm_isdst = 0; return time;
+}
+bool operator==(tm& t, tm& m) { return mktime(&t) == mktime(&m); }
+bool operator!=(tm& t, tm& m) { return mktime(&t) != mktime(&m); }
+bool operator<(tm& t, tm& m) { return mktime(&t) < mktime(&m); }
+bool operator>(tm& t, tm& m) { return mktime(&t) > mktime(&m); }
+bool operator<=(tm& t, tm& m) { return mktime(&t) <= mktime(&m); }
+bool operator>=(tm& t, tm& m) { return mktime(&t) >= mktime(&m); }
 #endif
