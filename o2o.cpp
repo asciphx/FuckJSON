@@ -10,6 +10,7 @@ struct Type {
   double bigBlob;
   Tab* tab = nullptr;
   const static char* $[];
+  ~Type() { tab = nullptr; }
 };
 FUCKJSON(Type, id, language, bigBlob, tab)
 struct Tab {
@@ -19,6 +20,7 @@ struct Tab {
   tm date = now();
   Type* type = nullptr;
   const static char* $[];
+  ~Tab() { type = nullptr; }
 };
 FUCKJSON(Tab, id, ok, name, date, type)
 int main() {
