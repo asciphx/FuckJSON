@@ -176,7 +176,6 @@ namespace orm {
   }
   template <class T>
   inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
-	if (_v == nullptr) { std::cout << 111111111111; } else { std::cout << (int)_v; }
 	//Pointer cannot be deserialized
   }
 }
