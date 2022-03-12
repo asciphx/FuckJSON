@@ -16,8 +16,10 @@
 #include <cstdarg>
 #include <stdexcept>
 #include "utils/text.hpp"
-#include "json.hpp"
 #include "Initalization.hpp"
+#define JSON_NOEXCEPTION
+#include "json.hpp"
+using json = nlohmann::json;
 namespace orm {
   using Expand = int[];
 #define Exp (void)orm::Expand
@@ -93,10 +95,10 @@ namespace orm {
 			  s.push_back('"'); s += t->$[++k]; s += "\":" + std::to_string(t->*_);
 			} else if constexpr (std::is_same<const std::string, std::remove_reference_t<decltype(t->*_)>>::value) {
 			  s.push_back('"'); s += t->$[++k]; s += "\":\"" + t->*_ + "\"";
-			} else if constexpr (is_vector<std::remove_reference_t<decltype(t->*_)>>::value) {
-			  s.push_back('"'); s += t->$[++k]; s += "\":"; s << &(t->*_);
-			} else if constexpr (is_ptr<std::remove_reference_t<decltype(t->*_)>>::value) {
-			  s.push_back('"'); s += t->$[++k]; s += "\":"; s << *t->*_;
+			} else if constexpr (is_vector<std::decay_t<decltype(t->*_)>>::value) {
+			  s.push_back('"'); s += t->$[++k]; s += "\":"; s << t->*_;
+			} else if constexpr (is_ptr<std::decay_t<decltype(t->*_)>>::value) {
+			  s.push_back('"'); s += t->$[++k]; s += "\":"; t->*_ == nullptr ? s += "null" : s << t->*_;
 			} else {
 			  s.push_back('"'); s += t->$[++k]; s += "\":"; s << t->*_;
 			} s.push_back(',');
@@ -114,7 +116,7 @@ namespace orm {
 	if (_v == nullptr) {
 	  j[c] = nullptr;
 	} else {
-	  constexpr auto $ = Tuple<ptr_pack_t<T>>(); auto* t = _v; std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
+	  constexpr auto $ = Tuple<ptr_pack_t<T>>(); auto* t = const_cast<T>(_v); std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
 	  ForEachTuple($, [t, &k, &s](auto& _) {
 		if constexpr (std::is_same<tm, std::remove_reference_t<decltype(t->*_)>>::value) {
 		  s.push_back('"'); s += t->$[++k];
@@ -174,6 +176,7 @@ namespace orm {
   }
   template <class T>
   inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
+	if (_v == nullptr) { std::cout << 111111111111; } else { std::cout << (int)_v; }
 	//Pointer cannot be deserialized
   }
 }

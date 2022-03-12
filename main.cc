@@ -2,7 +2,7 @@
 /* FuckJSON https://github.com/asciphx/FuckJSON Copyright (c) 2021-2022 Asciphx */
 //Many to many
 int main() {
-  Tab t{ 1, true, "reflect", now(), vector<Type>{ Type{ 1,"model" } } };
+  Type e; Tab t{ 1, true, "reflect", now(), vector<Type>{ Type{ 1,"model" } }, &e }; cout << t << '\n';
   t = json::parse(R"(
 {
   "id": 3,
@@ -31,6 +31,6 @@ int main() {
   t.types[1].language = "go programing";
   t.types[1].tabs[0].name = "Megatron";
   t.types[1].tabs[0].types = vector<Type>{ Type{ 1,"typescript" }, Type{ 2,"best in the universe" } };
-  cout << t << '\n' << json(t).dump(2) << '\n';
+  cout << json(t).dump(2) << '\n';
   return 0;
 }
