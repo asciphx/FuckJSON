@@ -1,4 +1,4 @@
-﻿# FuckJSON[v1.2]
+﻿# FuckJSON[v1.3]
 > Meta universe's C++ serialization and deserialization JSON tool can be one-to-one, many to many, many to one or one to many.
 
 ## Advantage
@@ -13,27 +13,32 @@
 ## Model layer
 ```c++
 struct Type;
+struct Tab;
 struct Tab {
   uint32_t id;
   bool ok;
   text<15> name;
   tm date;
   vector<Type> types;
-  Tab(uint32_t a = 0, bool b = false, const char* c = "", tm d = now(), vector<Type> e = {}) :
-	id(a), ok(b), name(c), date(d), types(e) {}
+  Type* type;
+  Tab(uint32_t a = 0, bool b = false, const char* c = "", tm d = now(), vector<Type> e = {}, Type* f = nullptr) :
+	id(a), ok(b), name(c), date(d), types(e), type(f) {}
+  ~Tab() { type = nullptr; }
   const static char* $[];
-};//const static char* $[] -> Store the name of the key and the order tuple corresponding
-FUCKJSON(Tab, id, ok, name, date, types)
+};
+FUCKJSON(Tab, id, ok, name, date, types, type)
 struct Type {
   uint8_t id;
   text<10> language;
   double bigBlob;
   vector<Tab> tabs;
-  Type(uint8_t a = 0, const char* b = "", double c = 0, vector<Tab> d = {}) :
-	id(a), language(b), bigBlob(c), tabs(d) {}
+  Tab* tab;
+  Type(uint8_t a = 0, const char* b = "", double c = 0, vector<Tab> d = {}, Tab* e = nullptr) :
+	id(a), language(b), bigBlob(c), tabs(d), tab(e) {}
+  ~Type() { tab = nullptr; }
   const static char* $[];
 };
-FUCKJSON(Type, id, language, bigBlob, tabs)
+FUCKJSON(Type, id, language, bigBlob, tabs, tab)
 ```
 
 ## Features
