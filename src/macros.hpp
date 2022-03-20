@@ -28,7 +28,7 @@ namespace orm {
   inline constexpr void ForEachTuple(T& tuple, Fn&& fn, std::index_sequence<I...>) { Exp{ ((void)fn(std::get<I>(tuple)), 0)... }; }
   template <typename T, typename Fn>
   inline constexpr void ForEachField(T* value, Fn&& fn) {
-	ForEachTuple(T::Tuple, [value, &fn](auto field) { fn(value->*(field)); }, std::make_index_sequence<static_cast<short>(T::$->size())>{});
+	ForEachTuple(T::Tuple, [value, &fn](auto field) { fn(value->*(field)); }, std::make_index_sequence<sizeof(T::$) / sizeof(*T::$)>{});
   }
   template <class T> struct is_vector : std::false_type {};
   template <class T> struct is_vector<T[]> : std::false_type {};
@@ -97,7 +97,7 @@ namespace orm {
 			} else {
 			  s.push_back('"'); s += t->$[++k]; s += "\":"; s << t->*_;
 			} s.push_back(',');
-			}, std::make_index_sequence<static_cast<short>(Y::$->size())>{}); s[s.size() - 1] = '}'; s.push_back(',');
+			}, std::make_index_sequence<sizeof(Y::$) / sizeof(*Y::$)>{}); s[s.size() - 1] = '}'; s.push_back(',');
 		} s[s.size() - 1] = ']'; j[c] = json::parse(s);
 	  }
 	}
@@ -138,7 +138,7 @@ namespace orm {
 		} else {
 		  s.push_back('"'); s += t->$[++k]; s += "\":"; s << &(t->*_); s.push_back(',');
 		}
-		}, std::make_index_sequence<static_cast<short>(Y::$->size())>{}); s[s.size() - 1] = '}';
+		}, std::make_index_sequence<sizeof(Y::$) / sizeof(*Y::$)>{}); s[s.size() - 1] = '}';
 		j[c] = json::parse(s);
 	}
   }
@@ -187,38 +187,38 @@ namespace orm {
 #else
 #define _IS_WIN32 1
 #endif
-#define PROTO_1(k)      #k
-#define PROTO_2(k,...)  #k, EXP(PROTO_1(__VA_ARGS__))
-#define PROTO_3(k,...)  #k, EXP(PROTO_2(__VA_ARGS__))
-#define PROTO_4(k,...)  #k, EXP(PROTO_3(__VA_ARGS__))
-#define PROTO_5(k,...)  #k, EXP(PROTO_4(__VA_ARGS__))
-#define PROTO_6(k,...)  #k, EXP(PROTO_5(__VA_ARGS__))
-#define PROTO_7(k,...)  #k, EXP(PROTO_6(__VA_ARGS__))
-#define PROTO_8(k,...)  #k, EXP(PROTO_7(__VA_ARGS__))
-#define PROTO_9(k,...)  #k, EXP(PROTO_8(__VA_ARGS__))
-#define PROTO_10(k,...) #k, EXP(PROTO_9(__VA_ARGS__))
-#define PROTO_11(k,...) #k, EXP(PROTO_10(__VA_ARGS__))
-#define PROTO_12(k,...) #k, EXP(PROTO_11(__VA_ARGS__))
-#define PROTO_13(k,...) #k, EXP(PROTO_12(__VA_ARGS__))
-#define PROTO_14(k,...) #k, EXP(PROTO_13(__VA_ARGS__))
-#define PROTO_15(k,...) #k, EXP(PROTO_14(__VA_ARGS__))
-#define PROTO_16(k,...) #k, EXP(PROTO_15(__VA_ARGS__))
-#define PROTO_17(k,...) #k, EXP(PROTO_16(__VA_ARGS__))
-#define PROTO_18(k,...) #k, EXP(PROTO_17(__VA_ARGS__))
-#define PROTO_19(k,...) #k, EXP(PROTO_18(__VA_ARGS__))
-#define PROTO_20(k,...) #k, EXP(PROTO_19(__VA_ARGS__))
-#define PROTO_21(k,...) #k, EXP(PROTO_20(__VA_ARGS__))
-#define PROTO_22(k,...) #k, EXP(PROTO_21(__VA_ARGS__))
-#define PROTO_23(k,...) #k, EXP(PROTO_22(__VA_ARGS__))
-#define PROTO_24(k,...) #k, EXP(PROTO_23(__VA_ARGS__))
-#define PROTO_25(k,...) #k, EXP(PROTO_24(__VA_ARGS__))
-#define PROTO_26(k,...) #k, EXP(PROTO_25(__VA_ARGS__))
-#define PROTO_27(k,...) #k, EXP(PROTO_26(__VA_ARGS__))
-#define PROTO_28(k,...) #k, EXP(PROTO_27(__VA_ARGS__))
-#define PROTO_29(k,...) #k, EXP(PROTO_28(__VA_ARGS__))
-#define PROTO_30(k,...) #k, EXP(PROTO_29(__VA_ARGS__))
-#define PROTO_31(k,...) #k, EXP(PROTO_30(__VA_ARGS__))
-#define PROTO_32(k,...) #k, EXP(PROTO_31(__VA_ARGS__))
+#define PROTO_1(k)      std::string_view(#k, sizeof(#k)-1)
+#define PROTO_2(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_1(__VA_ARGS__))
+#define PROTO_3(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_2(__VA_ARGS__))
+#define PROTO_4(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_3(__VA_ARGS__))
+#define PROTO_5(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_4(__VA_ARGS__))
+#define PROTO_6(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_5(__VA_ARGS__))
+#define PROTO_7(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_6(__VA_ARGS__))
+#define PROTO_8(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_7(__VA_ARGS__))
+#define PROTO_9(k,...)  std::string_view(#k, sizeof(#k)-1), EXP(PROTO_8(__VA_ARGS__))
+#define PROTO_10(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_9(__VA_ARGS__))
+#define PROTO_11(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_10(__VA_ARGS__))
+#define PROTO_12(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_11(__VA_ARGS__))
+#define PROTO_13(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_12(__VA_ARGS__))
+#define PROTO_14(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_13(__VA_ARGS__))
+#define PROTO_15(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_14(__VA_ARGS__))
+#define PROTO_16(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_15(__VA_ARGS__))
+#define PROTO_17(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_16(__VA_ARGS__))
+#define PROTO_18(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_17(__VA_ARGS__))
+#define PROTO_19(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_18(__VA_ARGS__))
+#define PROTO_20(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_19(__VA_ARGS__))
+#define PROTO_21(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_20(__VA_ARGS__))
+#define PROTO_22(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_21(__VA_ARGS__))
+#define PROTO_23(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_22(__VA_ARGS__))
+#define PROTO_24(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_23(__VA_ARGS__))
+#define PROTO_25(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_24(__VA_ARGS__))
+#define PROTO_26(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_25(__VA_ARGS__))
+#define PROTO_27(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_26(__VA_ARGS__))
+#define PROTO_28(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_27(__VA_ARGS__))
+#define PROTO_29(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_28(__VA_ARGS__))
+#define PROTO_30(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_29(__VA_ARGS__))
+#define PROTO_31(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_30(__VA_ARGS__))
+#define PROTO_32(k,...) std::string_view(#k, sizeof(#k)-1), EXP(PROTO_31(__VA_ARGS__))
 #define PROTO_N1(N,...) EXP(PROTO_##N(__VA_ARGS__))
 #define PROTO_N(N,...) PROTO_N1(N,__VA_ARGS__)
 

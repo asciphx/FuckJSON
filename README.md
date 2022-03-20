@@ -50,6 +50,7 @@ FUCKJSON(Type, id, language, bigBlob, tabs, tab)
 ```shell
 g++ -std=c++17 *.cc -o main -I./src -O3
 g++ -std=c++17 *.cpp -o o2o -I./src -O3
+g++ -std=c++17 *.c -o benchmark -I./src -O3
 ```
 # Supported compilers(minimum version):
     - Linux: G++ 9.2, Clang++ 9.0
