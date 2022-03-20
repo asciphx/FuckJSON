@@ -48,9 +48,9 @@ FUCKJSON(Type, id, language, bigBlob, tabs, tab)
 
 ## 前提
 ```shell
-g++ -std=c++17 *.cc -o main -I./src -O3
+g++ -std=c++17 main.cc -o main -I./src -O3
 g++ -std=c++17 *.cpp -o o2o -I./src -O3
-g++ -std=c++17 *.c -o benchmark -I./src -O3
+g++ -std=c++17 benchmark.cc -o benchmark -I./src -O3
 ```
 # 支持的编译器（最低版本）:
     - Linux: G++ 9.2, Clang++ 9.0
