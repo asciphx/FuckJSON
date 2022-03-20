@@ -1,10 +1,10 @@
-﻿# FuckJSON[v1.3]
-> 元宇宙的c++的序列化与反序列化JSON工具，可以一对一，多对多，多对一或者一对多。
+﻿# FuckJSON[v1.4]
+> 元宇宙的c++的序列化与反序列化JSON工具
 
 ## 优势
 - [x] 基于最现代化的JSON库，nlohman JSON。
-- [x] 只需要原生的结构体，简单的一句话再加上一句宏即可搞定。
-- [x] 强大静态反射，最高性能，最低开销，最迅速的反应，最容易维护，以及最少代码。
+- [x] 只需要原生的结构体，简单的两句宏即可搞定。
+- [x] 强大静态反射，最高性能(相对于其他语言)，最低开销，最迅速的反应，最容易维护，以及最少代码。
 - [x] 解决模块化与互相依赖，循环依赖的问题。
 - [x] 纯头文件无需cmake即可直接编译。
 - [x] 支持序列化对象或者vector对象到字符串，序列化对象得到JSON，反序列化Json格式字符串到对象。
@@ -13,7 +13,6 @@
 ## 模型层
 ```c++
 struct Type;
-struct Tab;
 struct Tab {
   uint32_t id;
   bool ok;
@@ -24,7 +23,7 @@ struct Tab {
   Tab(uint32_t a = 0, bool b = false, const char* c = "", tm d = now(), vector<Type> e = {}, Type* f = nullptr) :
 	id(a), ok(b), name(c), date(d), types(e), type(f) {}
   ~Tab() { type = nullptr; }
-  const static char* $[];
+  SCHEMA(Tab, id, ok, name, date, types, type)
 };
 FUCKJSON(Tab, id, ok, name, date, types, type)
 struct Type {
@@ -36,7 +35,7 @@ struct Type {
   Type(uint8_t a = 0, const char* b = "", double c = 0, vector<Tab> d = {}, Tab* e = nullptr) :
 	id(a), language(b), bigBlob(c), tabs(d), tab(e) {}
   ~Type() { tab = nullptr; }
-  const static char* $[];
+  SCHEMA(Type, id, language, bigBlob, tabs, tab)
 };
 FUCKJSON(Type, id, language, bigBlob, tabs, tab)
 ```

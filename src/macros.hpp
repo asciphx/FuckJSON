@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cstdarg>
 #include <stdexcept>
+#include <string_view>
 #include "utils/text.hpp"
 #include "Initalization.hpp"
 #define JSON_NOEXCEPTION
@@ -24,16 +25,10 @@ namespace orm {
   using Expand = int[];
 #define Exp (void)orm::Expand
   template <typename T, typename Fn, std::size_t... I>
-  inline constexpr void ForEachTuple(T& tuple, Fn&& fn, std::index_sequence<I...>) {
-	Exp{ ((void)fn(std::get<I>(tuple)), 0)... };
-  }
-  template <typename T>
-  inline constexpr auto Tuple() { return std::make_tuple(); }
+  inline constexpr void ForEachTuple(T& tuple, Fn&& fn, std::index_sequence<I...>) { Exp{ ((void)fn(std::get<I>(tuple)), 0)... }; }
   template <typename T, typename Fn>
   inline constexpr void ForEachField(T* value, Fn&& fn) {
-	constexpr const auto tuplE = Tuple<T>();
-	ForEachTuple(tuplE, [value, &fn](auto field) { fn(value->*(field)); },
-	  std::make_index_sequence<std::tuple_size<decltype(tuplE)>::value>{});
+	ForEachTuple(T::Tuple, [value, &fn](auto field) { fn(value->*(field)); }, std::make_index_sequence<static_cast<short>(T::$->size())>{});
   }
   template <class T> struct is_vector : std::false_type {};
   template <class T> struct is_vector<T[]> : std::false_type {};
@@ -64,19 +59,19 @@ namespace orm {
   }
   template <class T>
   static typename std::enable_if<is_vector<T>::value, void>::type FuckJSON(const T& _v, const char* c, json& j) {
-	using TYPE = vector_pack_t<T>; size_t l = _v.size(); if (l) {
-	  if constexpr (std::is_same<TYPE, std::string>::value || std::is_same<TYPE, tm>::value || is_text<TYPE>::value) {
+	using Y = vector_pack_t<T>; size_t l = _v.size(); if (l) {
+	  if constexpr (std::is_same<Y, std::string>::value || std::is_same<Y, tm>::value || is_text<Y>::value) {
 		std::string s; s.reserve(0x1f); s.push_back('['); s.push_back('\"');
-		if constexpr (std::is_same<TYPE, std::string>::value) { s += _v[0]; } else { s << _v[0]; } s.push_back('\"');
+		if constexpr (std::is_same<Y, std::string>::value) { s += _v[0]; } else { s << _v[0]; } s.push_back('\"');
 		for (size_t i = 1; i < l; ++i) {
 		  s.push_back(','); s.push_back('\"');
-		  if constexpr (std::is_same<TYPE, std::string>::value) { s += _v[i]; } else { s << _v[i]; } s.push_back('\"');
+		  if constexpr (std::is_same<Y, std::string>::value) { s += _v[i]; } else { s << _v[i]; } s.push_back('\"');
 		} s.push_back(']'); j[c] = json::parse(s);
-	  } else if constexpr (std::is_fundamental<TYPE>::value) {
+	  } else if constexpr (std::is_fundamental<Y>::value) {
 		std::string s; s.push_back('['); s += std::to_string(_v[0]);
 		for (size_t i = 0; ++i < l; s.push_back(','), s += std::to_string(_v[i])); s.push_back(']'); j[c] = json::parse(s);
 	  } else {
-		constexpr auto $ = Tuple<TYPE>(); std::string s; s.reserve(0x3f); s.push_back('[');
+		auto& $ = Y::Tuple; std::string s; s.reserve(0x3f); s.push_back('[');
 		for (size_t i = 0; i < l; ++i) {
 		  auto* t = &_v[i]; s.push_back('{'); int8_t k = -1;
 		  ForEachTuple($, [t, &k, &s](auto& _) {
@@ -102,7 +97,7 @@ namespace orm {
 			} else {
 			  s.push_back('"'); s += t->$[++k]; s += "\":"; s << t->*_;
 			} s.push_back(',');
-			}, std::make_index_sequence<std::tuple_size<decltype($)>::value>{}); s[s.size() - 1] = '}'; s.push_back(',');
+			}, std::make_index_sequence<static_cast<short>(Y::$->size())>{}); s[s.size() - 1] = '}'; s.push_back(',');
 		} s[s.size() - 1] = ']'; j[c] = json::parse(s);
 	  }
 	}
@@ -116,7 +111,7 @@ namespace orm {
 	if (_v == nullptr) {
 	  j[c] = nullptr;
 	} else {
-	  constexpr auto $ = Tuple<ptr_pack_t<T>>(); auto* t = const_cast<T>(_v); std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
+	  using Y = ptr_pack_t<T>; auto& $ = Y::Tuple; auto* t = const_cast<T>(_v); std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
 	  ForEachTuple($, [t, &k, &s](auto& _) {
 		if constexpr (std::is_same<tm, std::remove_reference_t<decltype(t->*_)>>::value) {
 		  s.push_back('"'); s += t->$[++k];
@@ -143,7 +138,7 @@ namespace orm {
 		} else {
 		  s.push_back('"'); s += t->$[++k]; s += "\":"; s << &(t->*_); s.push_back(',');
 		}
-		}, std::make_index_sequence<std::tuple_size<decltype($)>::value>{}); s[s.size() - 1] = '}';
+		}, std::make_index_sequence<static_cast<short>(Y::$->size())>{}); s[s.size() - 1] = '}';
 		j[c] = json::parse(s);
 	}
   }
@@ -162,7 +157,7 @@ namespace orm {
   }
   template <class T>
   static inline typename std::enable_if<is_vector<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
-	using TYPE = vector_pack_t<T>; try { for (auto& t : j.at(s))_v.push_back(t.get<TYPE>()); } catch (const std::exception&) {}
+	using Y = vector_pack_t<T>; try { for (auto& t : j.at(s))_v.push_back(t.get<Y>()); } catch (const std::exception&) {}
   }
   template<typename T>
   inline typename std::enable_if<!is_ptr<T>::value&& std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
@@ -335,8 +330,45 @@ static void from_json(const json& j, o& f) { ATTR_N(f,NUM_ARGS(__VA_ARGS__),__VA
 #define STARS_N(o,N,...) EXP(STAR_##N(o,__VA_ARGS__))
 #define STARS(o,N,...) STARS_N(o,N,__VA_ARGS__)
 
-#define FUCKJSON(o,...)const char* ::o::$[NUM_ARGS(__VA_ARGS__)] = { PROTO_N(NUM_ARGS(__VA_ARGS__),__VA_ARGS__) };\
-template<>inline constexpr auto orm::Tuple<o>(){return std::make_tuple(STARS(o,NUM_ARGS(__VA_ARGS__), __VA_ARGS__));}ATTRS(o, __VA_ARGS__)\
+#define STAR__1(o,k)      decltype(&o::k)
+#define STAR__2(o,k,...)  decltype(&o::k), EXP(STAR__1(o,__VA_ARGS__))
+#define STAR__3(o,k,...)  decltype(&o::k), EXP(STAR__2(o,__VA_ARGS__))
+#define STAR__4(o,k,...)  decltype(&o::k), EXP(STAR__3(o,__VA_ARGS__))
+#define STAR__5(o,k,...)  decltype(&o::k), EXP(STAR__4(o,__VA_ARGS__))
+#define STAR__6(o,k,...)  decltype(&o::k), EXP(STAR__5(o,__VA_ARGS__))
+#define STAR__7(o,k,...)  decltype(&o::k), EXP(STAR__6(o,__VA_ARGS__))
+#define STAR__8(o,k,...)  decltype(&o::k), EXP(STAR__7(o,__VA_ARGS__))
+#define STAR__9(o,k,...)  decltype(&o::k), EXP(STAR__8(o,__VA_ARGS__))
+#define STAR__10(o,k,...) decltype(&o::k), EXP(STAR__9(o,__VA_ARGS__))
+#define STAR__11(o,k,...) decltype(&o::k), EXP(STAR__10(o,__VA_ARGS__))
+#define STAR__12(o,k,...) decltype(&o::k), EXP(STAR__11(o,__VA_ARGS__))
+#define STAR__13(o,k,...) decltype(&o::k), EXP(STAR__12(o,__VA_ARGS__))
+#define STAR__14(o,k,...) decltype(&o::k), EXP(STAR__13(o,__VA_ARGS__))
+#define STAR__15(o,k,...) decltype(&o::k), EXP(STAR__14(o,__VA_ARGS__))
+#define STAR__16(o,k,...) decltype(&o::k), EXP(STAR__15(o,__VA_ARGS__))
+#define STAR__17(o,k,...) decltype(&o::k), EXP(STAR__16(o,__VA_ARGS__))
+#define STAR__18(o,k,...) decltype(&o::k), EXP(STAR__17(o,__VA_ARGS__))
+#define STAR__19(o,k,...) decltype(&o::k), EXP(STAR__18(o,__VA_ARGS__))
+#define STAR__20(o,k,...) decltype(&o::k), EXP(STAR__19(o,__VA_ARGS__))
+#define STAR__21(o,k,...) decltype(&o::k), EXP(STAR__20(o,__VA_ARGS__))
+#define STAR__22(o,k,...) decltype(&o::k), EXP(STAR__21(o,__VA_ARGS__))
+#define STAR__23(o,k,...) decltype(&o::k), EXP(STAR__22(o,__VA_ARGS__))
+#define STAR__24(o,k,...) decltype(&o::k), EXP(STAR__23(o,__VA_ARGS__))
+#define STAR__25(o,k,...) decltype(&o::k), EXP(STAR__24(o,__VA_ARGS__))
+#define STAR__26(o,k,...) decltype(&o::k), EXP(STAR__25(o,__VA_ARGS__))
+#define STAR__27(o,k,...) decltype(&o::k), EXP(STAR__26(o,__VA_ARGS__))
+#define STAR__28(o,k,...) decltype(&o::k), EXP(STAR__27(o,__VA_ARGS__))
+#define STAR__29(o,k,...) decltype(&o::k), EXP(STAR__28(o,__VA_ARGS__))
+#define STAR__30(o,k,...) decltype(&o::k), EXP(STAR__29(o,__VA_ARGS__))
+#define STAR__31(o,k,...) decltype(&o::k), EXP(STAR__30(o,__VA_ARGS__))
+#define STAR__32(o,k,...) decltype(&o::k), EXP(STAR__31(o,__VA_ARGS__))
+#define STAR_S_N(o,N,...) EXP(STAR__##N(o,__VA_ARGS__))
+#define STAR_S(o,N,...) STAR_S_N(o,N,__VA_ARGS__)
+
+#define SCHEMA(o,...) static std::tuple<STAR_S(o,NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> Tuple; const static std::string_view $[];
+
+#define FUCKJSON(o,...)const std::string_view o::$[NUM_ARGS(__VA_ARGS__)] = { PROTO_N(NUM_ARGS(__VA_ARGS__),__VA_ARGS__) }; ATTRS(o, __VA_ARGS__)\
+std::tuple<STAR_S(o, NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> o::Tuple = std::make_tuple(STARS(o, NUM_ARGS(__VA_ARGS__), __VA_ARGS__));\
 std::string& operator<<(std::string& s, o* c) {\
 s.push_back('{'); int8_t i = -1;\
 ForEachField(c, [&i, c, &s](auto& t) {\

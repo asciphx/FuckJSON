@@ -1,10 +1,10 @@
-﻿# FuckJSON[v1.3]
-> Meta universe's C++ serialization and deserialization JSON tool can be one-to-one, many to many, many to one or one to many.
+﻿# FuckJSON[v1.4]
+> Meta universe's C++ serialization and deserialization JSON tool
 
 ## Advantage
 - [x] Based on the most modern JSON library, nlohman JSON.
-- [x] You only need the original structure, a simple sentence and a macro.
-- [x] Powerful static reflection, maximum performance, minimum overhead, the fastest response, the easiest to maintain, and the low code.
+- [x] You only need the original structure and two macro.
+- [x] Powerful static reflection, maximum performance(relative to other languages), minimum overhead, the fastest response, the easiest to maintain, and the low code.
 - [x] Now, the problems of modularity, interdependence and circular dependency have been solved.
 - [x] Pure header files can be compiled directly without cmake
 - [x] Supports serializing objects or vector objects to strings, serializing objects to get JSON, and deserializing JSON format strings to objects.
@@ -13,7 +13,6 @@
 ## Model layer
 ```c++
 struct Type;
-struct Tab;
 struct Tab {
   uint32_t id;
   bool ok;
@@ -24,7 +23,7 @@ struct Tab {
   Tab(uint32_t a = 0, bool b = false, const char* c = "", tm d = now(), vector<Type> e = {}, Type* f = nullptr) :
 	id(a), ok(b), name(c), date(d), types(e), type(f) {}
   ~Tab() { type = nullptr; }
-  const static char* $[];
+  SCHEMA(Tab, id, ok, name, date, types, type)
 };
 FUCKJSON(Tab, id, ok, name, date, types, type)
 struct Type {
@@ -36,7 +35,7 @@ struct Type {
   Type(uint8_t a = 0, const char* b = "", double c = 0, vector<Tab> d = {}, Tab* e = nullptr) :
 	id(a), language(b), bigBlob(c), tabs(d), tab(e) {}
   ~Type() { tab = nullptr; }
-  const static char* $[];
+  SCHEMA(Type, id, language, bigBlob, tabs, tab)
 };
 FUCKJSON(Type, id, language, bigBlob, tabs, tab)
 ```

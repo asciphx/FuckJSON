@@ -4,13 +4,14 @@
 static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
 struct Tab;
+struct Tab;
 struct Type {
   uint8_t id;
   text<10> language;
   double bigBlob;
   Tab* tab = nullptr;
-  const static char* $[];
   ~Type() { tab = nullptr; }
+  SCHEMA(Type, id, language, bigBlob, tab)
 };
 FUCKJSON(Type, id, language, bigBlob, tab)
 struct Tab {
@@ -19,8 +20,8 @@ struct Tab {
   text<15> name;
   tm date = now();
   Type* type = nullptr;
-  const static char* $[];
   ~Tab() { type = nullptr; }
+  SCHEMA(Tab, id, ok, name, date, type)
 };
 FUCKJSON(Tab, id, ok, name, date, type)
 int main() {
