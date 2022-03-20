@@ -71,10 +71,10 @@ namespace orm {
 		std::string s; s.push_back('['); s += std::to_string(_v[0]);
 		for (size_t i = 0; ++i < l; s.push_back(','), s += std::to_string(_v[i])); s.push_back(']'); j[c] = json::parse(s);
 	  } else {
-		auto& $ = Y::Tuple; std::string s; s.reserve(0x3f); s.push_back('[');
+		std::string s; s.reserve(0x3f); s.push_back('[');
 		for (size_t i = 0; i < l; ++i) {
 		  auto* t = &_v[i]; s.push_back('{'); int8_t k = -1;
-		  ForEachTuple($, [t, &k, &s](auto& _) {
+		  ForEachTuple(Y::Tuple, [t, &k, &s](auto& _) {
 			if constexpr (std::is_same<const tm, std::remove_reference_t<decltype(t->*_)>>::value) {
 			  s.push_back('"'); s += t->$[++k]; s += "\":\""; std::ostringstream os; const tm* time = &(t->*_); os << std::setfill('0');
 #ifdef _WIN32
@@ -111,8 +111,8 @@ namespace orm {
 	if (_v == nullptr) {
 	  j[c] = nullptr;
 	} else {
-	  using Y = ptr_pack_t<T>; auto& $ = Y::Tuple; auto* t = const_cast<T>(_v); std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
-	  ForEachTuple($, [t, &k, &s](auto& _) {
+	  using Y = ptr_pack_t<T>; auto* t = const_cast<T>(_v); std::string s; s.reserve(0x3f); s.push_back('{'); int8_t k = -1;
+	  ForEachTuple(Y::Tuple, [t, &k, &s](auto& _) {
 		if constexpr (std::is_same<tm, std::remove_reference_t<decltype(t->*_)>>::value) {
 		  s.push_back('"'); s += t->$[++k];
 		  s += "\":\""; std::ostringstream os; const tm* time = &(t->*_); os << std::setfill('0');
