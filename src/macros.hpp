@@ -364,10 +364,7 @@ static void from_json(const json& j, o& f) { ATTR_N(f,NUM_ARGS(__VA_ARGS__),__VA
 #define STAR_S(o,N,...) STAR_S_N(o,N,__VA_ARGS__)
 
 #define SCHEMA(o,...) private: static std::tuple<STAR_S(o,NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> Tuple; const static std::string_view $[];\
-friend std::string& operator<<(std::string& s, o* c); friend std::ostream& operator<<(std::ostream& s, o* c);\
-friend std::ostream& operator<<(std::ostream& s, o& c); friend std::string& operator<<(std::string& s, std::vector<o> c);\
-friend std::ostream& operator<<(std::ostream& s, std::vector<o> c); friend std::string& operator<<(std::string& s, std::vector<o>* c);\
-friend std::ostream& operator<<(std::ostream& s, std::vector<o>* c); template<typename T,typename Fn>friend constexpr void orm::ForEachField(T* value, Fn&& fn);\
+friend std::string& operator<<(std::string& s, o* c); template<typename T,typename Fn>friend constexpr void orm::ForEachField(T* value, Fn&& fn);\
 template<typename U>friend typename std::enable_if<is_vector<U>::value,void>::type orm::FuckJSON(const U& u, const char* s, json& j);\
 template<typename U>friend typename std::enable_if<is_ptr<U>::value&&!std::is_fundamental<U>::value,void>::type orm::FuckJSON(const U& u, const char* c, json& j);
 
