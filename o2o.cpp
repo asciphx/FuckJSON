@@ -5,25 +5,24 @@ static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
 struct Tab;
 struct Tab;
-struct Type {
-  uint8_t id;
-  text<10> language;
-  double bigBlob;
-  Tab* tab = nullptr;
-  ~Type() { tab = nullptr; }
-  SCHEMA(Type, id, language, bigBlob, tab)
-};
+
+Struct(Type)
+uint8_t id;
+text<10> language;
+double bigBlob;
+Tab* tab = nullptr;
+~Type() { tab = nullptr; }
 FUCKJSON(Type, id, language, bigBlob, tab)
-struct Tab {
-  uint32_t id;
-  bool ok;
-  text<15> name;
-  tm date = now();
-  Type* type = nullptr;
-  ~Tab() { type = nullptr; }
-  SCHEMA(Tab, id, ok, name, date, type)
-};
+
+Struct(Tab)
+uint32_t id;
+bool ok;
+text<15> name;
+tm date = now();
+Type* type = nullptr;
+~Tab() { type = nullptr; }
 FUCKJSON(Tab, id, ok, name, date, type)
+
 int main() {
   Type ty{ 1,"model1" }, ty2{ 2,"model2",3.141593 };
   Tab t{ 1, true, "ref1", now(), &ty };

@@ -21,6 +21,8 @@
 #define JSON_NOEXCEPTION
 #include "json.hpp"
 using json = nlohmann::json;
+#define RUST_CAST reinterpret_cast<char*>
+#define Struct(class) struct class {
 namespace orm {
   using Expand = int[];
 #define Exp (void)orm::Expand
@@ -162,11 +164,7 @@ namespace orm {
   template<typename T>
   inline typename std::enable_if<!is_ptr<T>::value&& std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
 	try {
-	  if (j.contains(s)) {
-		if constexpr (std::is_same_v<bool, T>) {
-		  _v = j.at(s).get<short>() == 0 ? false : true;
-		} else { j.at(s).get_to(_v); }
-	  }
+	  if (j.contains(s)) { if constexpr (std::is_same_v<bool, T>) { _v = j.at(s).get<short>() == 0 ? false : true; } else { j.at(s).get_to(_v); } }
 	} catch (const std::exception&) {}
   }
   template <class T>
@@ -365,35 +363,41 @@ static void from_json(const json& j, o& f) { ATTR_N(f,NUM_ARGS(__VA_ARGS__),__VA
 #define STAR_S_N(o,N,...) EXP(STAR__##N(o,__VA_ARGS__))
 #define STAR_S(o,N,...) STAR_S_N(o,N,__VA_ARGS__)
 
-#define SCHEMA(o,...) static std::tuple<STAR_S(o,NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> Tuple; const static std::string_view $[];
+#define SCHEMA(o,...) private: static std::tuple<STAR_S(o,NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> Tuple; const static std::string_view $[];\
+friend std::string& operator<<(std::string& s, o* c); friend std::ostream& operator<<(std::ostream& s, o* c);\
+friend std::ostream& operator<<(std::ostream& s, o& c); friend std::string& operator<<(std::string& s, std::vector<o> c);\
+friend std::ostream& operator<<(std::ostream& s, std::vector<o> c); friend std::string& operator<<(std::string& s, std::vector<o>* c);\
+friend std::ostream& operator<<(std::ostream& s, std::vector<o>* c); template<typename T,typename Fn>friend constexpr void orm::ForEachField(T* value, Fn&& fn);\
+template<typename U>friend typename std::enable_if<is_vector<U>::value,void>::type orm::FuckJSON(const U& u, const char* s, json& j);\
+template<typename U>friend typename std::enable_if<is_ptr<U>::value&&!std::is_fundamental<U>::value,void>::type orm::FuckJSON(const U& u, const char* c, json& j);
 
-#define FUCKJSON(o,...)const std::string_view o::$[NUM_ARGS(__VA_ARGS__)] = { PROTO_N(NUM_ARGS(__VA_ARGS__),__VA_ARGS__) }; ATTRS(o, __VA_ARGS__)\
+#define FUCKER(o,...)const std::string_view o::$[NUM_ARGS(__VA_ARGS__)] = { PROTO_N(NUM_ARGS(__VA_ARGS__),__VA_ARGS__) }; ATTRS(o, __VA_ARGS__)\
 std::tuple<STAR_S(o, NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> o::Tuple = std::make_tuple(STARS(o, NUM_ARGS(__VA_ARGS__), __VA_ARGS__));\
 std::string& operator<<(std::string& s, o* c) {\
-s.push_back('{'); int8_t i = -1;\
-ForEachField(c, [&i, c, &s](auto& t) {\
-  if constexpr (!is_vector<std::remove_reference_t<decltype(t)>>::value) { s.push_back('"'); s += c->$[++i]; }\
-  if constexpr (std::is_same<tm, std::remove_reference_t<decltype(t)>>::value) {\
+  if (c == nullptr || *((char*)(RUST_CAST(c)+(size_t)(&reinterpret_cast<char const volatile&>(((o*)0)->*std::get<0>(o::Tuple))))) == 0) {\
+  s += "null"; return s; } s.push_back('{'); int8_t i = -1; ForEachField(c, [&i, c, &s](auto& t) { using Y=std::remove_reference_t<decltype(t)>;\
+  if constexpr (!is_vector<Y>::value) { s.push_back('"'); s += c->$[++i]; }\
+  if constexpr (std::is_same<tm, Y>::value) {\
 	s += "\":\""; std::ostringstream os; const tm* time = &t; os << std::setfill('0');\
-if constexpr(_IS_WIN32){os << std::setw(4) << time->tm_year + 1900;}else{\
-int y = time->tm_year / 100; os << std::setw(2) << 19 + y << std::setw(2) << time->tm_year - y * 100;}\
+    if constexpr(_IS_WIN32){os << std::setw(4) << time->tm_year + 1900;}else{\
+      int y = time->tm_year / 100; os << std::setw(2) << 19 + y << std::setw(2) << time->tm_year - y * 100;}\
 	os << '-' << std::setw(2) << (time->tm_mon + 1) << '-' << std::setw(2) << time->tm_mday << ' ' << std::setw(2)\
-	  << time->tm_hour << ':' << std::setw(2) << time->tm_min << ':' << std::setw(2) << time->tm_sec << '"'; s += os.str();\
-  } else if constexpr (std::is_same<bool, std::remove_reference_t<decltype(t)>>::value) {\
-	s += "\":", s += t == true ? "true" : "false";\
-  } else if constexpr (std::is_fundamental<std::remove_reference_t<decltype(t)>>::value) {\
-	s += "\":" + std::to_string(t);\
-  } else if constexpr (std::is_same<std::string, std::remove_reference_t<decltype(t)>>::value) {\
-	s += "\":\"" + t + "\"";\
-  } else if constexpr (is_vector<std::remove_reference_t<decltype(t)>>::value) {\
-	size_t l = t.size(); if (l) { s.push_back('"'); s += c->$[++i]; s += "\":"; s << &t; } else { s.pop_back(); }\
-  } else if constexpr (is_ptr<std::remove_reference_t<decltype(t)>>::value) {\
-    s += "\":";t==nullptr?s+="null":s << t;\
-  } else if constexpr (is_text<std::remove_reference_t<decltype(t)>>::value) {\
-	s += "\":"; s << t;\
+	<< time->tm_hour << ':' << std::setw(2) << time->tm_min << ':' << std::setw(2) << time->tm_sec << '"'; s += os.str(); s.push_back(',');\
+  } else if constexpr (std::is_same<bool, Y>::value) {\
+	s += "\":", s += t == true ? "true" : "false"; s.push_back(',');\
+  } else if constexpr (std::is_fundamental<Y>::value) {\
+	s += "\":" + std::to_string(t); s.push_back(',');\
+  } else if constexpr (std::is_same<std::string, Y>::value) {\
+	s += "\":\"" + t + "\""; s.push_back(',');\
+  } else if constexpr (is_vector<Y>::value) {\
+	size_t l = t.size(); if (l) { s.push_back('"'); s += c->$[++i]; s += "\":"; s << &t; s.push_back(','); }\
+  } else if constexpr (is_ptr<Y>::value) {\
+    s += "\":";t==nullptr?s+="null":s << t; s.push_back(',');\
+  } else if constexpr (is_text<Y>::value) {\
+	s += "\":"; s << t; s.push_back(',');\
   } else {\
-	s += "\":"; s << &t;\
-  } s.push_back(',');\
+	s += "\":"; s << &t; s.push_back(',');\
+  }\
   }); s[s.size() - 1] = '}'; return s;\
   }\
 std::string& operator<<(std::string& s, std::vector<o> c) {\
@@ -416,4 +420,5 @@ std::ostream& operator<<(std::ostream& s, std::vector<o>* c) {\
 }\
 std::ostream& operator<<(std::ostream& m, o* c) { std::string s; s << c; return m << s; }\
 std::ostream& operator<<(std::ostream& m, o& c) { std::string s; s << &c; return m << s; }
+#define FUCKJSON(o,...)SCHEMA(o,__VA_ARGS__)};FUCKER(o,__VA_ARGS__)
 #endif
