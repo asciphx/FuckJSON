@@ -22,7 +22,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 #define RUST_CAST reinterpret_cast<char*>
-#define Struct(class) struct class {
+#define class(class) struct class {
 namespace orm {
   using Expand = int[];
 #define Exp (void)orm::Expand

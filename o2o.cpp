@@ -3,10 +3,10 @@
 //One to one
 static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
-struct Tab;
-struct Tab;
+class Tab;
+class Tab;
 
-Struct(Type)
+class(Type)
 uint8_t id;
 text<10> language;
 double bigBlob;
@@ -14,7 +14,7 @@ Tab* tab = nullptr;
 ~Type() { tab = nullptr; }
 FUCKJSON(Type, id, language, bigBlob, tab)
 
-Struct(Tab)
+class(Tab)
 uint32_t id;
 bool ok;
 text<15> name;

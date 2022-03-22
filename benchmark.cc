@@ -1,10 +1,10 @@
 #include "src/macros.hpp"
 static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
-struct Tab;
-struct Type;
+class Tab;
+class Type;
 
-Struct(Tab)
+class(Tab)
 uint32_t id;
 bool ok;
 text<15> name;
@@ -13,7 +13,7 @@ Tab(uint32_t a = 0, bool b = false, const char* c = "", vector<Type> e = {}) :
   id(a), ok(b), name(c), types(e) {}
 FUCKJSON(Tab, id, ok, name, types)
 
-Struct(Type)
+class(Type)
 uint8_t id;
 text<10> language;
 vector<Tab> tabs;
