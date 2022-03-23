@@ -23,6 +23,36 @@
 using json = nlohmann::json;
 #define RUST_CAST reinterpret_cast<char*>
 #define class(class) struct class {
+/*A stupid idiot can never understand a real genius,
+ because a real genius has to do his useless homework and
+ is badly hurt by resentment and jealousy at school*/
+namespace std {
+#if _WIN32
+#if _HAS_CXX17==0
+  struct string_view {
+	string_view(const char*, unsigned long long);
+	[[nodiscard]] size_t length() const;
+	[[nodiscard]] size_t size() const;
+	[[nodiscard]] inline const char* data() const;
+  };
+  struct nullopt_t {
+	explicit constexpr nullopt_t(int) {}
+  };
+  template <class T>
+  struct optional {
+	using value_type = T;
+	constexpr optional() noexcept {}
+	constexpr optional(nullopt_t) noexcept {}
+  };
+  struct any {
+	any(void* v); any& operator=(void*);
+  };
+  std::string operator+=(std::string& t, const string_view& $) { return t; };
+#endif
+#elif !defined(_HAS_CXX17)
+
+#endif
+}
 namespace orm {
   using Expand = int[];
 #define Exp (void)orm::Expand
@@ -169,7 +199,7 @@ namespace orm {
   }
   template <class T>
   inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
-	//Pointer cannot be deserialized
+	if (_v != nullptr) { *_v = j.at(s).get<ptr_pack_t<T>>(); }
   }
 }
 #define EXP(O) O

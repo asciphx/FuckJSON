@@ -13085,6 +13085,16 @@ namespace nlohmann {
 		parser(detail::input_adapter(std::forward<InputType>(i)), cb, allow_exceptions, ignore_comments).parse(true, result);
 		return result;
 	  }
+	  template<class Obj, typename InputType>
+	  JSON_HEDLEY_WARN_UNUSED_RESULT
+		static void parse(Obj& j, InputType& i,
+		  const parser_callback_t cb = nullptr,
+		  const bool allow_exceptions = true,
+		  const bool ignore_comments = false) {
+		basic_json result;
+		parser(detail::input_adapter(std::forward<InputType>(i)), cb, allow_exceptions, ignore_comments).parse(true, result);
+		from_json(result, j);
+	  }
 	  template<typename IteratorType>
 	  JSON_HEDLEY_WARN_UNUSED_RESULT
 		static basic_json parse(IteratorType first,
