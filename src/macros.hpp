@@ -22,7 +22,7 @@
 #include "json.hpp"
 using json = nlohmann::json;
 #define RUST_CAST reinterpret_cast<char*>
-#define class(class) struct class {
+#define Class(class) struct class {
 /*A stupid idiot can never understand a real genius,
  because a real genius has to do his useless homework and
  is badly hurt by resentment and jealousy at school*/
