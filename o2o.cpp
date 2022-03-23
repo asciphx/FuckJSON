@@ -6,16 +6,16 @@ using namespace std; using namespace orm;
 class Tab;
 class Tab;
 
-class(Type)
-  uint8_t id;
+Class(Type)
+uint8_t id;
 text<10> language;
 double bigBlob;
 Tab* tab = nullptr;
 ~Type() { tab = nullptr; }
 FUCKJSON(Type, id, language, bigBlob, tab)
 
-class(Tab)
-  uint32_t id;
+Class(Tab)
+uint32_t id;
 bool ok;
 text<15> name;
 tm date = now();
