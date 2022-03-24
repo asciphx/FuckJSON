@@ -1,4 +1,4 @@
-﻿# FuckJSON[v1.5]
+﻿# FuckJSON[v1.6]
 > Meta universe's C++ serialization and deserialization JSON tool
 
 ## Advantage
@@ -9,6 +9,7 @@
 - [x] Pure header files can be compiled directly without cmake
 - [x] Supports serializing objects or vector objects to strings, serializing objects to get JSON, and deserializing JSON format strings to objects.
 - [x] Loose boolean type deserialization, including but not limited to true, false, and 0, 1
+- [x] Support direct conversion of class or struct to JSON string
 
 ## Model layer
 ```c++
@@ -37,6 +38,52 @@ Type(uint8_t a = 0, const char* b = "", double c = 0, vector<Tab> d = {}, Tab* e
   id(a), language(b), bigBlob(c), tabs(d), tab(e) {}
 ~Type() { tab = nullptr; }
 FUCKJSON(Type, id, language, bigBlob, tabs, tab)
+```
+
+## Examples
+> Suppose there is an object tab above
+```c++
+Tab t{ 1, true, "reflect", now() };
+```
+### Serialize the object into a JSON string
+```c++
+std::string s; s << &t
+```
+### Serialize objects into JSON
+```c++
+json(t);
+```c++
+### Deserialize JSON strings into objects [keep a layer of pointers that can be deserialized]
+```c++
+json::parse(t, R"(
+{
+"id": 3,
+"ok": false,
+"name": "big stupid idiot",
+"date": "2021-09-08 01:04:30",
+"type":  {
+"bigBlob": 0.0,
+"id": 1,
+"language": "Fucker"
+}
+}
+)");
+```
+### Deserialize JSON string to object [get specifies type and property does not contain pointer]
+```c++
+t = json::parse(R"(
+{
+"id": 3,
+"ok": false,
+"name": "big stupid idiot",
+"date": "2021-09-08 01:04:30",
+"type":  {
+"bigBlob": 0.0,
+"id": 1,
+"language": "Fucker"
+}
+}
+)").get<Tab>();
 ```
 
 ## Features

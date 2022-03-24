@@ -1,4 +1,4 @@
-﻿# FuckJSON[v1.5]
+﻿# FuckJSON[v1.6]
 > 元宇宙的c++的序列化与反序列化JSON工具
 
 ## 优势
@@ -9,6 +9,7 @@
 - [x] 纯头文件无需cmake即可直接编译。
 - [x] 支持序列化对象或者vector对象到字符串，序列化对象得到JSON，反序列化Json格式字符串到对象。
 - [x] 宽松的布尔类型反序列化，包含但不仅限于true、false，还有0，1;
+- [x] 支持class或者struct直接转json字符串
 
 ## 模型层
 ```c++
@@ -37,6 +38,54 @@ Type(uint8_t a = 0, const char* b = "", double c = 0, vector<Tab> d = {}, Tab* e
   id(a), language(b), bigBlob(c), tabs(d), tab(e) {}
 ~Type() { tab = nullptr; }
 FUCKJSON(Type, id, language, bigBlob, tabs, tab)
+```
+
+## 例子
+> 假设存在一个上面的对象Tab
+```c++
+Tab t{ 1, true, "reflect", now() };
+```
+
+### 将对象序列化为JSON的字符串
+```c++
+std::string s; s << &t
+```
+### 将对象序列化为JSON
+```c++
+json(t);
+```c++
+### 将JSON字符串反序列化为对象[保留一层可被反序列化的指针]
+```c++
+json::parse(t, R"(
+{
+  "id": 3,
+  "ok": false,
+  "name": "big stupid idiot",
+  "date": "2021-09-08 01:04:30",
+  "type":  {
+    "bigBlob": 0.0,
+    "id": 1,
+    "language": "Fucker"
+  }
+}
+)");
+```
+
+### 将JSON字符串反序列化为对象[get指定类型且属性不包含指针]
+```c++
+t = json::parse(R"(
+{
+  "id": 3,
+  "ok": false,
+  "name": "big stupid idiot",
+  "date": "2021-09-08 01:04:30",
+  "type":  {
+    "bigBlob": 0.0,
+    "id": 1,
+    "language": "Fucker"
+  }
+}
+)").get<Tab>();
 ```
 
 ## 特征
