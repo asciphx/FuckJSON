@@ -57,33 +57,33 @@ json(t);
 ```c++
 json::parse(t, R"(
 {
-"id": 3,
-"ok": false,
-"name": "big stupid idiot",
-"date": "2021-09-08 01:04:30",
-"type":  {
-"bigBlob": 0.0,
-"id": 1,
-"language": "Fucker"
+  "id": 3,
+  "ok": false,
+  "name": "brokers",
+  "date": "2021-09-08 01:04:30",
+  "type":  {
+    "bigBlob": 0.0,
+    "id": 1,
+    "language": "all"
+  }
 }
-}
-)");
+)");//type is {"bigBlob": 0.0,"id": 1,"language":"Fucker"}
 ```
 ### Deserialize JSON string to object [get specifies type and property does not contain pointer]
 ```c++
 t = json::parse(R"(
 {
-"id": 3,
-"ok": false,
-"name": "big stupid idiot",
-"date": "2021-09-08 01:04:30",
-"type":  {
-"bigBlob": 0.0,
-"id": 1,
-"language": "Fucker"
+  "id": 3,
+  "ok": false,
+  "name": "bonkers",
+  "date": "2021-09-08 01:04:30",
+  "type":  {
+    "bigBlob": 0.0,
+    "id": 1,
+    "language": "pointer"
+  }
 }
-}
-)").get<Tab>();
+)").get<Tab>();//type is null
 ```
 
 ## Features

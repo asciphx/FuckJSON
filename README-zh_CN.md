@@ -60,15 +60,15 @@ json::parse(t, R"(
 {
   "id": 3,
   "ok": false,
-  "name": "big stupid idiot",
+  "name": "brokers",
   "date": "2021-09-08 01:04:30",
   "type":  {
     "bigBlob": 0.0,
     "id": 1,
-    "language": "Fucker"
+    "language": "all"
   }
 }
-)");
+)");//type为{"bigBlob": 0.0,"id": 1,"language":"Fucker"}
 ```
 
 ### 将JSON字符串反序列化为对象[get指定类型且属性不包含指针]
@@ -77,15 +77,15 @@ t = json::parse(R"(
 {
   "id": 3,
   "ok": false,
-  "name": "big stupid idiot",
+  "name": "bonkers",
   "date": "2021-09-08 01:04:30",
   "type":  {
     "bigBlob": 0.0,
     "id": 1,
-    "language": "Fucker"
+    "language": "pointer"
   }
 }
-)").get<Tab>();
+)").get<Tab>();//type为null
 ```
 
 ## 特征
