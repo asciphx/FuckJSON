@@ -41,13 +41,13 @@ FUCKJSON(Type, id, language, bigBlob, tabs, tab)
 ```
 
 ## Examples
-> Suppose there is an object tab above
+> Suppose there is an object Tab above
 ```c++
 Tab t{ 1, true, "reflect", now() };
 ```
 ### Serialize the object into a JSON string
 ```c++
-std::string s; s << &t
+std::string s; s << &t;
 ```
 ### Serialize objects into JSON
 ```c++

@@ -197,7 +197,7 @@ namespace orm {
   }
   template <class T>
   inline typename std::enable_if<is_ptr<T>::value && !std::is_fundamental<T>::value, void>::type FuckOop(T& _v, const char* s, const json& j) {
-	if (_v != nullptr) { *_v = j.at(s).get<ptr_pack_t<T>>(); }
+	if (_v != nullptr && j.contains(s)) { *_v = j.at(s).get<ptr_pack_t<T>>(); }
   }
 }
 #define EXP(O) O

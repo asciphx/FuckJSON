@@ -48,7 +48,7 @@ Tab t{ 1, true, "reflect", now() };
 
 ### 将对象序列化为JSON的字符串
 ```c++
-std::string s; s << &t
+std::string s; s << &t;
 ```
 ### 将对象序列化为JSON
 ```c++
