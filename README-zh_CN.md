@@ -53,7 +53,7 @@ std::string s; s << &t
 ### 将对象序列化为JSON
 ```c++
 json(t);
-```c++
+```
 ### 将JSON字符串反序列化为对象[保留一层可被反序列化的指针]
 ```c++
 json::parse(t, R"(

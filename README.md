@@ -52,7 +52,7 @@ std::string s; s << &t
 ### Serialize objects into JSON
 ```c++
 json(t);
-```c++
+```
 ### Deserialize JSON strings into objects [keep a layer of pointers that can be deserialized]
 ```c++
 json::parse(t, R"(
