@@ -1,4 +1,4 @@
-﻿#ifndef MACROS_HPP
+#ifndef MACROS_HPP
 #define MACROS_HPP
 #include <string>
 #include <tuple>
@@ -401,7 +401,7 @@ std::tuple<STAR_S(o, NUM_ARGS(__VA_ARGS__),__VA_ARGS__)> o::Tuple = std::make_tu
 std::string& operator<<(std::string& s, o* c) {\
   if (c == nullptr || *((char*)(RUST_CAST(c)+(size_t)(&reinterpret_cast<char const volatile&>(((o*)0)->*std::get<0>(o::Tuple))))) == 0) {\
   s += "null"; return s; } s.push_back('{'); int8_t i = -1; ForEachField(c, [&i, c, &s](auto& t) { using Y=std::remove_reference_t<decltype(t)>;\
-  if constexpr (!is_vector<Y>::value) { s.push_back('"'); s += c->$[++i]; }\
+  ++i; if constexpr (!is_vector<Y>::value) { s.push_back('"'); s += c->$[i]; }\
   if constexpr (std::is_same<tm, Y>::value) {\
 	s += "\":\""; std::ostringstream os; const tm* time = &t; os << std::setfill('0');\
     if constexpr(_IS_WIN32){os << std::setw(4) << time->tm_year + 1900;}else{\
@@ -415,7 +415,7 @@ std::string& operator<<(std::string& s, o* c) {\
   } else if constexpr (std::is_same<std::string, Y>::value) {\
 	s += "\":\"" + t + "\""; s.push_back(',');\
   } else if constexpr (is_vector<Y>::value) {\
-	size_t l = t.size(); if (l) { s.push_back('"'); s += c->$[++i]; s += "\":"; s << &t; s.push_back(','); }\
+	if (t.size()) { s.push_back('"'); s += c->$[i]; s += "\":"; s << &t; s.push_back(','); }\
   } else if constexpr (is_ptr<Y>::value) {\
     s += "\":";t==nullptr?s+="null":s << t; s.push_back(',');\
   } else if constexpr (is_text<Y>::value) {\
@@ -426,21 +426,21 @@ std::string& operator<<(std::string& s, o* c) {\
   }); s[s.size() - 1] = '}'; return s;\
   }\
 std::string& operator<<(std::string& s, std::vector<o> c) {\
-s.push_back('['); size_t l = c.size(); if (l > 0) { s << &c[0];\
-  for (size_t i = 1; i < l; ++i) { s.push_back(','), s << &c[i]; }\
+s.push_back('['); if (c.size() > 0) { s << &c[0];\
+  for (size_t i = 1; i < c.size(); ++i) { s.push_back(','), s << &c[i]; }\
 } s.push_back(']'); return s; }\
 std::ostream& operator<<(std::ostream& s, std::vector<o> c) {\
-s << '['; size_t l = c.size(); if (l > 0) { s << &c[0];\
- for (size_t i = 1; i < l; ++i) { s << ',' << &c[i]; }\
+s << '['; if (c.size() > 0) { s << &c[0];\
+ for (size_t i = 1; i < c.size(); ++i) { s << ',' << &c[i]; }\
 } s << ']'; return s; }\
 std::string& operator<<(std::string& s, std::vector<o>* c) {\
-  s.push_back('['); size_t l = c->size(); if (l > 0) { s << &c->at(0);\
-  for (size_t i = 1; i < l; ++i) { s.push_back(','), s << &c->at(i); }\
+  s.push_back('['); if (c->size() > 0) { s << &c->at(0);\
+  for (size_t i = 1; i < c->size(); ++i) { s.push_back(','), s << &c->at(i); }\
   } s.push_back(']'); return s;\
 }\
 std::ostream& operator<<(std::ostream& s, std::vector<o>* c) {\
-  s << '['; size_t l = c->size(); if (l > 0) { s << &c->at(0);\
-  for (size_t i = 1; i < l; ++i) { s << ',' << &c->at(i); }\
+  s << '['; if (c->size() > 0) { s << &c->at(0);\
+  for (size_t i = 1; i < c->size(); ++i) { s << ',' << &c->at(i); }\
   } s << ']'; return s;\
 }\
 std::ostream& operator<<(std::ostream& m, o* c) { std::string s; s << c; return m << s; }\
