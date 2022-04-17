@@ -95,10 +95,10 @@ t = json::parse(R"(
 
 ## Premise
 ```shell
-g++ -std=c++17 main.cc -o main -I./src -O3
-g++ -std=c++17 *.cpp -o o2o -I./src -O3
-g++ -std=c++17 benchmark.cc -o benchmark -I./src -O3
-g++ -std=c++17 text.cc -o text -I./src -O3
+g++ -std=c++17 main.cc -o main -I./ -O3
+g++ -std=c++17 *.cpp -o o2o -I./ -O3
+g++ -std=c++17 benchmark.cc -o benchmark -I./ -O3
+g++ -std=c++17 text.cc -o text -I./ -O3
 ```
 # Supported compilers(minimum version):
     - Linux: G++ 9.2, Clang++ 9.0
