@@ -1,4 +1,4 @@
-﻿# FuckJSON[v1.7]
+﻿# FuckJSON[v1.8]
 > Meta universe's C++ serialization and deserialization JSON tool
 
 ## Advantage
@@ -10,6 +10,7 @@
 - [x] Supports serializing objects or vector objects to strings, serializing objects to get JSON, and deserializing JSON format strings to objects.
 - [x] Loose boolean type deserialization, including but not limited to true, false, and 0, 1
 - [x] Support direct conversion of class or struct to JSON string
+- [x] Allow the varchar type of the database, adopt the text < > scheme and be accurate to each character to ensure the maximum length and data security
 
 ## Model layer
 ```c++

@@ -1,7 +1,9 @@
 
 #pragma once
-namespace orm {
- static tm* RES_NOW; static auto RES_last = std::chrono::steady_clock::now(); tm now() { if (std::chrono::steady_clock::now() - RES_last < std::chrono::seconds(1)) return *RES_NOW; time_t rawtime; std::time(&rawtime);
+#include <chrono>
+#include <sstream>
+#include <iomanip>
+namespace orm { static tm* RES_NOW; static auto RES_last = std::chrono::steady_clock::now(); tm now() { if (std::chrono::steady_clock::now() - RES_last < std::chrono::seconds(1)) return *RES_NOW; time_t rawtime; std::time(&rawtime);
 #if defined(_MSC_VER) || defined(__MINGW32__)
  localtime_s(RES_NOW, &rawtime);
 #else
@@ -9,7 +11,7 @@ namespace orm {
 #endif
  RES_last = std::chrono::steady_clock::now(); return *RES_NOW; }  static int InitializationOrm() { time_t rawtime; std::time(&rawtime); RES_NOW = std::localtime(&rawtime); RES_NOW->tm_isdst = 0;
 #if _WIN32
- system("chcp 65001");
+ system("chcp 65001 >nul");
 #else
  std::locale::global(std::locale("en_US.UTF8"));
 #endif
