@@ -1,10 +1,10 @@
-#include "src/macros.hpp"
+#include <src/macros.hpp>
 /* FuckJSON https://github.com/asciphx/FuckJSON Copyright (c) 2021-2022 Asciphx */
 //One to one
 static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
 class Tab;
-class Tab;
+class Type;
 
 Class(Type)
 uint8_t id;
@@ -28,18 +28,18 @@ int main() {
   Tab t{ 1, true, "ref1", now(), &ty };
   Tab a{ 1, true, "ref2", now() };
   t.type->tab = &a;
-  t.type->language = "Meta universe";
-  cout << t.type->tab << '\n';
+  t.type->language = "🎨🧵🎱🕶👓👑✈🛸🛰🚀";
+  cout << t.type << '\n';
   json::parse(t, R"(
 {
   "id": 3,
   "ok": false,
-  "name": "big stupid idiot",
+  "name": "干杯🍻🍺!",
   "date": "2021-09-08 01:04:30",
   "type":  {
-    "bigBlob": 0.0,
+    "bigBlob": 0.1,
     "id": 1,
-    "language": "Fucker"
+    "language": "元宇宙🌀🌌🪐!"
   }
 }
 )");//deserialization a layer one-to-one, because multiple level pointer passes are lost

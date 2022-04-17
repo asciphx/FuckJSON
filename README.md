@@ -60,15 +60,15 @@ json::parse(t, R"(
 {
   "id": 3,
   "ok": false,
-  "name": "brokers",
+  "name": "🍻🍺!",
   "date": "2021-09-08 01:04:30",
   "type":  {
-    "bigBlob": 0.0,
+    "bigBlob": 0.1,
     "id": 1,
-    "language": "all"
+    "language": "Meta🌀🌌🪐!"
   }
 }
-)");//type is {"bigBlob": 0.0,"id": 1,"language":"Fucker"}
+)");//type is {"bigBlob": 0.1,"id": 1,"language":"Meta🌀🌌🪐!"}
 ```
 ### Deserialize JSON string to object [get specifies type and property does not contain pointer]
 ```c++
@@ -76,12 +76,12 @@ t = json::parse(R"(
 {
   "id": 3,
   "ok": false,
-  "name": "bonkers",
+  "name": "🍻🍺!",
   "date": "2021-09-08 01:04:30",
   "type":  {
-    "bigBlob": 0.0,
+    "bigBlob": 0.1,
     "id": 1,
-    "language": "pointer"
+    "language": "Meta🌀🌌🪐!"
   }
 }
 )").get<Tab>();//type is null
@@ -98,6 +98,7 @@ t = json::parse(R"(
 g++ -std=c++17 main.cc -o main -I./src -O3
 g++ -std=c++17 *.cpp -o o2o -I./src -O3
 g++ -std=c++17 benchmark.cc -o benchmark -I./src -O3
+g++ -std=c++17 text.cc -o text -I./src -O3
 ```
 # Supported compilers(minimum version):
     - Linux: G++ 9.2, Clang++ 9.0

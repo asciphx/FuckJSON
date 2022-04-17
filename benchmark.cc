@@ -1,4 +1,4 @@
-#include "src/macros.hpp"
+#include <src/macros.hpp>
 static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
 class Tab;
@@ -7,7 +7,7 @@ class Type;
 Class(Tab)
 uint32_t id;
 bool ok;
-text<15> name;
+text<6> name;
 vector<Type> types;
 Tab(uint32_t a = 0, bool b = false, const char* c = "", vector<Type> e = {}) :
   id(a), ok(b), name(c), types(e) {}
@@ -37,14 +37,14 @@ int main() {
     "language": "css",
     "tabs": [{
       "id": 1,
-      "name": "wtf!"
+      "name": "🎨🧵🎱🕶👓👑"
     }, {
       "id": 2,
-      "name": "stupid!"
+      "name": "你好，杰森！"
     }]
   }, {
     "id": 3,
-    "language": "idiot!"
+    "language": "hello干杯🍻🍺!"
   }]
 }
 )").get<Tab>()).dump().c_str());
