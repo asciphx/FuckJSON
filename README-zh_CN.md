@@ -1,4 +1,4 @@
-﻿# FuckJSON[v1.8]
+﻿# FuckJSON[v1.9]
 > 元宇宙的c++的序列化与反序列化JSON工具
 
 ## 优势

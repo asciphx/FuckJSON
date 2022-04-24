@@ -1,4 +1,4 @@
-#include <src/macros.hpp>
+#include <src/fuckJson.hpp>
 /* FuckJSON https://github.com/asciphx/FuckJSON Copyright (c) 2021-2022 Asciphx */
 //One to one
 static int RES_INIT = orm::InitializationOrm();

@@ -1,4 +1,4 @@
-#include <src/macros.hpp>
+#include <src/fuckJson.hpp>
 static int RES_INIT = orm::InitializationOrm();
 using namespace std; using namespace orm;
 class Tab;
