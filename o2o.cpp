@@ -10,8 +10,7 @@ Class(Type)
 uint8_t id;
 text<10> language;
 double bigBlob;
-Tab* tab = nullptr;
-~Type() { tab = nullptr; }
+box<Tab> tab;
 FUCKJSON(Type, id, language, bigBlob, tab)
 
 Class(Tab)
@@ -19,17 +18,15 @@ uint32_t id;
 bool ok;
 text<15> name;
 tm date = now();
-Type* type = nullptr;
-~Tab() { type = nullptr; }
+box<Type> type;
 FUCKJSON(Tab, id, ok, name, date, type)
 
 int main() {
-  Type ty{ 1,"model1",3.141593 };
-  Tab t{ 1, true, "ref1", now(), &ty };
+  Tab t{ 1, true, "ref1", now(), Type{1,"model1",3.141593} };
   Tab a{ 1, true, "ref2", now() };
-  t.type->tab = &a;
-  t.type->language = "🎨🧵🎱🕶👓👑✈🛸🛰🚀";
-  cout << t.type << '\n';
+  t.type().tab = a;
+  t.type().language = "🎨🧵🎱🕶👓👑✈🛸🛰🚀";
+  cout << t << '\n';
   json::parse(t, R"(
 {
   "id": 3,
