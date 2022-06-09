@@ -11,6 +11,7 @@
 - [x] Loose boolean type deserialization, including but not limited to true, false, and 0, 1
 - [x] Support direct conversion of class or struct to JSON string
 - [x] Allow the varchar type of the database, adopt the text < > scheme and be accurate to each character to ensure the maximum length and data security
+- [x] Supports a box similar to Rust, without using raw pointers, and is extremely fast
 
 ## Model layer
 ```c++
