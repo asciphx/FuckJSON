@@ -4,8 +4,8 @@
 int main() {
   Tab t{ 1, true, "reflect🪂", now(), vector<Type>{ Type{ 1,"model🦼" } }, nullptr };
   std::string s; s << &t;//Support direct conversion of class or struct to JSON string
-  cout << s << '\n';//or cout << t << '\n';
-  t = json::parse(R"(
+  std::cout << s << '\n';//or cout << t << '\n';
+  json::parse(t, R"(
 {
   "id": 3,
   "ok": false,
@@ -29,10 +29,10 @@ int main() {
     "language": "rust🚟"
   }]
 }
-)").get<Tab>();
+)");
   t.types[1].language = "go programing";
   t.types[1].tabs[0].name = "Megatron🛹";
   t.types[1].tabs[0].types = vector<Type>{ Type{ 1,"typescript🚁" }, Type{ 2,"best in the universe" } };
-  cout << json(t).dump(2) << '\n';
+  std::cout << json(t).dump(2) << '\n';
   return 0;
 }

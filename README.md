@@ -1,4 +1,4 @@
-﻿# FuckJSON[v2.0]
+﻿# FuckJSON[v2.1]
 > Meta universe's C++ serialization and deserialization JSON tool
 
 ## Advantage
@@ -12,6 +12,7 @@
 - [x] Support direct conversion of class or struct to JSON string
 - [x] Allow the varchar type of the database, adopt the text < > scheme and be accurate to each character to ensure the maximum length and data security
 - [x] Supports a box similar to Rust, without using raw pointers, and is extremely fast
+- [x] It can deserialize JSON format strings, including nested objects. Theoretically, it can be nested infinitely
 
 ## Model layer
 ```c++
@@ -53,7 +54,7 @@ std::string s; s << &t;
 ```c++
 json(t);
 ```
-### Deserialize JSON strings into objects [keep a layer of pointers that can be deserialized]
+### Deserialize JSON strings into objects
 ```c++
 json::parse(t, R"(
 {
@@ -67,25 +68,8 @@ json::parse(t, R"(
     "language": "Meta🌀🌌🪐!"
   }
 }
-)");//type is {"bigBlob": 0.1,"id": 1,"language":"Meta🌀🌌🪐!"}
+)");
 ```
-### Deserialize JSON string to object [get specifies type and property does not contain pointer]
-```c++
-t = json::parse(R"(
-{
-  "id": 3,
-  "ok": false,
-  "name": "🍻🍺!",
-  "date": "2021-09-08 01:04:30",
-  "type":  {
-    "bigBlob": 0.1,
-    "id": 1,
-    "language": "Meta🌀🌌🪐!"
-  }
-}
-)").get<Tab>();//type is null
-```
-
 ## Features
 - Modularization
 - Header files only
