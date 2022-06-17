@@ -2,7 +2,7 @@
 /* FuckJSON https://github.com/asciphx/FuckJSON Copyright (c) 2021-2022 Asciphx */
 //Many to many
 int main() {
-  Tab t{ 1, true, "reflect🪂", now(), vector<Type>{ Type{ 1,"model🦼" } }, nullptr };
+  Tab t{ 1, true, "reflect🪂", now(), vector<Type>{ Type{ 1,"model🦼" } }, Type{ 2,"👔" } };
   std::string s; s << &t;//Support direct conversion of class or struct to JSON string
   std::cout << s << '\n';//or cout << t << '\n';
   json::parse(t, R"(
