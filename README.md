@@ -1,4 +1,4 @@
-﻿# FuckJSON[v2.2]
+﻿# FuckJSON[v2.3]
 > Meta universe's C++ serialization and deserialization JSON tool
 
 ## Advantage

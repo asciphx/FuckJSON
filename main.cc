@@ -27,7 +27,11 @@ int main() {
   }, {
     "id": 3,
     "language": "rust🚟"
-  }]
+  }],
+  "type": {
+    "id": 1,
+    "language": "c++🏎"
+  }
 }
 )");
   t.types[1].language = "go programing";
